@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Image, StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
 import { useThemeContext } from "../theme/ThemeContext";
-import { brand } from "../theme/colors";
 import { getThemePreference } from "../lib/api";
 import { loadSession } from "../lib/auth-storage";
 import { useSession } from "../lib/session-context";
@@ -59,9 +58,8 @@ export function SplashScreen({ navigation }: Props) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Animated.View style={{ opacity, transform: [{ scale }] }}>
-        <Text style={[styles.wordmark, { color: brand.primaryBlue }]}>SOIL</Text>
-        <Text style={[styles.tagline, { color: theme.textMuted }]}>THE INNOVATORS</Text>
+      <Animated.View style={[styles.logoCard, { opacity, transform: [{ scale }] }]}>
+        <Image source={require("../../assets/branding/logo.png")} style={styles.logo} resizeMode="contain" />
       </Animated.View>
     </View>
   );
@@ -73,17 +71,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  wordmark: {
-    fontSize: 48,
-    fontWeight: "700",
-    textAlign: "center",
-    letterSpacing: 2,
+  // The logo is designed for light backgrounds, so it always sits on a
+  // white card — this keeps it legible even when the screen behind it is
+  // dark-themed, per the branding spec.
+  logoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 16,
   },
-  tagline: {
-    marginTop: 4,
-    fontSize: 12,
-    fontWeight: "500",
-    textAlign: "center",
-    letterSpacing: 4,
+  logo: {
+    width: 160,
+    height: 160,
   },
 });

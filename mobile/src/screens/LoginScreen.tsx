@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -60,7 +61,11 @@ export function LoginScreen({ navigation }: Props) {
       style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Text style={[styles.title, { color: brand.primaryBlue }]}>SOIL</Text>
+      <Image
+        source={require("../../assets/branding/logo.png")}
+        style={styles.logo}
+        resizeMode="contain"
+      />
       <Text style={[styles.subtitle, { color: theme.textMuted }]}>Employee / Student Login</Text>
 
       <View style={styles.field}>
@@ -107,11 +112,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    textAlign: "center",
-    letterSpacing: 2,
+  logo: {
+    width: 96,
+    height: 96,
+    alignSelf: "center",
   },
   subtitle: {
     fontSize: 14,

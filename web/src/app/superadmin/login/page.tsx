@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Logo } from "@/components/logo";
 import { loginSuperAdminAction, type SuperAdminLoginState } from "./actions";
 
 const initialState: SuperAdminLoginState = {};
@@ -11,8 +12,8 @@ export default function SuperAdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-primary">SOIL</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Super Admin Login</p>
+        <Logo size={72} className="mx-auto" />
+        <p className="mt-3 text-center text-sm text-muted-foreground">Super Admin Login</p>
 
         <form action={formAction} className="mt-6 space-y-4">
           <div>

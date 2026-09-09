@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getSuperAdminById } from "@/lib/services/super-admin";
 import { ThemeOverride } from "@/components/theme-script";
+import { Logo } from "@/components/logo";
 import { logoutSuperAdminAction } from "./actions";
 
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
@@ -18,9 +19,9 @@ export default async function SuperAdminLayout({ children }: { children: React.R
       <ThemeOverride preference={account.themePreference ?? "system"} />
       <header className="flex items-center justify-between border-b border-border bg-surface px-6 py-3">
         <div className="flex items-center gap-6">
-          <div>
-            <span className="font-semibold text-primary">SOIL</span>
-            <span className="ml-2 text-sm text-muted-foreground">Super Admin</span>
+          <div className="flex items-center gap-2">
+            <Logo size={28} />
+            <span className="ml-1 text-sm text-muted-foreground">Super Admin</span>
           </div>
           <nav className="flex gap-4 text-sm">
             <Link href="/superadmin/tenants" className="text-muted-foreground hover:text-foreground">

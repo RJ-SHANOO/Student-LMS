@@ -43,6 +43,19 @@
         {
           "locationWhenInUsePermission": "SOIL uses your location to verify you are on institute premises when marking attendance."
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/branding/logo.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "image": "./assets/branding/logo.png",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
       ]
     ]
   }

@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { tenantsCollection } from "@/lib/db/collections";
 import { getSettings } from "@/lib/services/settings";
 import { ThemeOverride } from "@/components/theme-script";
+import { Logo } from "@/components/logo";
 import { logoutAction } from "./actions";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,9 +26,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <ThemeOverride preference={settings.themePreference ?? "system"} />
       <header className="flex items-center justify-between border-b border-border bg-surface px-6 py-3">
         <div className="flex items-center gap-6">
-          <div>
-            <span className="font-semibold text-primary">SOIL</span>
-            <span className="ml-2 text-sm text-muted-foreground">{tenant.name}</span>
+          <div className="flex items-center gap-2">
+            <Logo size={28} />
+            <span className="ml-1 text-sm text-muted-foreground">{tenant.name}</span>
           </div>
           <nav className="flex gap-4 text-sm">
             <Link href="/admin/students" className="text-muted-foreground hover:text-foreground">
