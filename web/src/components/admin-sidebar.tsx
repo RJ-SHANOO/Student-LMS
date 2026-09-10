@@ -16,15 +16,15 @@ import {
 } from "./icons";
 
 const NAV_ITEMS = [
-  { href: "/admin", label: "Dashboard", icon: IconDashboard, exact: true },
-  { href: "/admin/students", label: "Students", icon: IconStudents },
-  { href: "/admin/employees", label: "Employees", icon: IconEmployees },
-  { href: "/admin/attendance", label: "Attendance", icon: IconAttendance },
-  { href: "/admin/fees", label: "Fees", icon: IconFees },
-  { href: "/admin/tasks", label: "Tasks", icon: IconTasks },
-  { href: "/admin/activity-log", label: "Activity", icon: IconActivity },
-  { href: "/admin/settings", label: "Settings", icon: IconSettings },
-];
+  { href: "/admin", label: "Dashboard", icon: IconDashboard, exact: true, mod: null },
+  { href: "/admin/students", label: "Students", icon: IconStudents, exact: false, mod: "students" },
+  { href: "/admin/employees", label: "Employees", icon: IconEmployees, exact: false, mod: "employees" },
+  { href: "/admin/attendance", label: "Attendance", icon: IconAttendance, exact: false, mod: "attendance" },
+  { href: "/admin/fees", label: "Fees", icon: IconFees, exact: false, mod: "fees" },
+  { href: "/admin/tasks", label: "Tasks", icon: IconTasks, exact: false, mod: "tasks" },
+  { href: "/admin/activity-log", label: "Activity", icon: IconActivity, exact: false, mod: "activity" },
+  { href: "/admin/settings", label: "Settings", icon: IconSettings, exact: false, mod: "settings" },
+] as const;
 
 export function AdminSidebar({
   tenantName,
@@ -46,19 +46,22 @@ export function AdminSidebar({
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3">
-        {NAV_ITEMS.map(({ href, label, icon: ItemIcon, exact }) => {
+        {NAV_ITEMS.map(({ href, label, icon: ItemIcon, exact, mod }) => {
           const active = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+          const fg = mod ? `var(--color-mod-${mod})` : "var(--color-primary)";
+          const soft = mod ? `var(--color-mod-${mod}-soft)` : "var(--color-accent-soft)";
           return (
             <Link
               key={href}
               href={href}
               className={
                 active
-                  ? "flex items-center gap-3 rounded-md bg-accent-soft px-3 py-2 text-sm font-medium text-primary"
+                  ? "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium"
                   : "flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
               }
+              style={active ? { backgroundColor: soft, color: fg } : undefined}
             >
-              <ItemIcon />
+              <ItemIcon style={{ color: active ? fg : undefined }} />
               {label}
             </Link>
           );

@@ -19,6 +19,23 @@
   --color-accent: #5ab3e0; /* brand accent sky blue */
   --color-accent-soft: #eaf4fc;
   --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+
+  /* Per-module accent colors — sidebar/dashboard/list-page icon badges each
+     get their own hue so the app doesn't read as one flat blue everywhere. */
+  --color-mod-students: #2e5fa3;
+  --color-mod-students-soft: #eaf4fc;
+  --color-mod-employees: #7c3aed;
+  --color-mod-employees-soft: #f3e8ff;
+  --color-mod-attendance: #059669;
+  --color-mod-attendance-soft: #d1fae5;
+  --color-mod-fees: #d97706;
+  --color-mod-fees-soft: #fef3c7;
+  --color-mod-tasks: #e11d48;
+  --color-mod-tasks-soft: #ffe4e6;
+  --color-mod-activity: #0891b2;
+  --color-mod-activity-soft: #cffafe;
+  --color-mod-settings: #4f46e5;
+  --color-mod-settings-soft: #e0e7ff;
 }
 
 .dark {
@@ -34,6 +51,21 @@
   --color-accent: #5ab3e0;
   --color-accent-soft: rgba(90, 179, 224, 0.15);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+
+  --color-mod-students: #7cb0e8;
+  --color-mod-students-soft: rgba(46, 95, 163, 0.25);
+  --color-mod-employees: #c4b5fd;
+  --color-mod-employees-soft: rgba(124, 58, 237, 0.22);
+  --color-mod-attendance: #34d399;
+  --color-mod-attendance-soft: rgba(5, 150, 105, 0.22);
+  --color-mod-fees: #fbbf24;
+  --color-mod-fees-soft: rgba(217, 119, 6, 0.22);
+  --color-mod-tasks: #fb7185;
+  --color-mod-tasks-soft: rgba(225, 29, 72, 0.22);
+  --color-mod-activity: #22d3ee;
+  --color-mod-activity-soft: rgba(8, 145, 178, 0.22);
+  --color-mod-settings: #a5b4fc;
+  --color-mod-settings-soft: rgba(79, 70, 229, 0.22);
 }
 
 @theme inline {
@@ -56,6 +88,14 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* A two-tone brand gradient for primary CTAs, in place of a flat fill. */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+.btn-gradient:hover {
+  filter: brightness(1.06);
 }
 
 /* Subtle, app-wide interaction polish — smooth color/transform transitions

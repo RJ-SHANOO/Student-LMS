@@ -1,6 +1,8 @@
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { listActivityLog } from "@/lib/services/activity-log";
+import { ModuleIcon } from "@/components/module-icon";
+import { IconActivity } from "@/components/icons";
 
 function humanizeAction(action: string) {
   return action
@@ -15,7 +17,10 @@ export default async function ActivityLogPage() {
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-foreground">Activity Log</h1>
+      <div className="flex items-center gap-2.5">
+        <ModuleIcon mod="activity" icon={IconActivity} />
+        <h1 className="text-lg font-semibold text-foreground">Activity Log</h1>
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">Most recent 100 actions across your institute.</p>
 
       <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">

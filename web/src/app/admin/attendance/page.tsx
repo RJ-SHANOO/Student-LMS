@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { listAttendance } from "@/lib/services/attendance";
+import { ModuleIcon } from "@/components/module-icon";
+import { IconAttendance } from "@/components/icons";
 
 export default async function AttendancePage({
   searchParams,
@@ -19,10 +21,13 @@ export default async function AttendancePage({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-foreground">All Attendance</h1>
+        <div className="flex items-center gap-2.5">
+          <ModuleIcon mod="attendance" icon={IconAttendance} />
+          <h1 className="text-lg font-semibold text-foreground">All Attendance</h1>
+        </div>
         <Link
           href="/admin/attendance/display"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+          className="rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white"
         >
           Show Check-in QR
         </Link>

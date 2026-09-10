@@ -29,7 +29,7 @@ export function RecordPaymentForm({ feeId }: { feeId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+          className="rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
         >
           {pending ? "Saving..." : "Add Payment"}
         </button>

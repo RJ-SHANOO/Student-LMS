@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { listStudents } from "@/lib/services/students";
+import { ModuleIcon } from "@/components/module-icon";
+import { IconStudents } from "@/components/icons";
 import { toggleStudentStatusAction } from "./actions";
 
 export default async function StudentsPage({
@@ -20,10 +22,13 @@ export default async function StudentsPage({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-foreground">Students &amp; Interns</h1>
+        <div className="flex items-center gap-2.5">
+          <ModuleIcon mod="students" icon={IconStudents} />
+          <h1 className="text-lg font-semibold text-foreground">Students &amp; Interns</h1>
+        </div>
         <Link
           href="/admin/students/new"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+          className="rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white"
         >
           Add Student
         </Link>

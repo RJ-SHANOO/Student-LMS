@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { listFees } from "@/lib/services/fees";
+import { ModuleIcon } from "@/components/module-icon";
+import { IconFees } from "@/components/icons";
 
 export default async function FeesPage({
   searchParams,
@@ -18,10 +20,13 @@ export default async function FeesPage({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-foreground">Fees</h1>
+        <div className="flex items-center gap-2.5">
+          <ModuleIcon mod="fees" icon={IconFees} />
+          <h1 className="text-lg font-semibold text-foreground">Fees</h1>
+        </div>
         <Link
           href="/admin/fees/new"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+          className="rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white"
         >
           Generate Fee
         </Link>

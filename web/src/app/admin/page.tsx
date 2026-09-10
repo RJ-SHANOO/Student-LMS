@@ -39,18 +39,21 @@ export default async function AdminDashboardPage() {
       value: students.length,
       href: "/admin/students",
       icon: IconStudents,
+      mod: "students",
     },
     {
       label: "Active Employees",
       value: employees.length,
       href: "/admin/employees",
       icon: IconEmployees,
+      mod: "employees",
     },
     {
       label: "Present Today",
       value: presentToday,
       href: "/admin/attendance",
       icon: IconAttendance,
+      mod: "attendance",
     },
     {
       label: "Outstanding Fees",
@@ -58,6 +61,7 @@ export default async function AdminDashboardPage() {
       sublabel: outstandingFees.length > 0 ? `${currency.format(outstandingAmount)} due` : undefined,
       href: "/admin/fees",
       icon: IconFees,
+      mod: "fees",
     },
   ];
 
@@ -67,15 +71,18 @@ export default async function AdminDashboardPage() {
       <p className="mt-1 text-sm text-muted-foreground">A quick look at your institute today.</p>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map(({ label, value, sublabel, href, icon: StatIcon }) => (
+        {stats.map(({ label, value, sublabel, href, icon: StatIcon, mod }) => (
           <Link
             key={label}
             href={href}
-            className="group rounded-lg border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
+            className="group rounded-lg border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md"
           >
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-              <span className="rounded-md bg-accent-soft p-1.5 text-primary">
+              <span
+                className="rounded-md p-1.5"
+                style={{ backgroundColor: `var(--color-mod-${mod}-soft)`, color: `var(--color-mod-${mod})` }}
+              >
                 <StatIcon className="h-4 w-4" />
               </span>
             </div>

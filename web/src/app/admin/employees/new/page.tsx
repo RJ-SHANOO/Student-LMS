@@ -28,7 +28,7 @@ export default function NewEmployeePage() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+          className="w-full rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
         >
           {pending ? "Saving..." : "Add Employee"}
         </button>

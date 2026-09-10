@@ -78,8 +78,8 @@ export function AttendanceHomeScreen({ navigation }: Props) {
           ]}
           onPress={() => navigation.navigate("Tasks")}
         >
-          <View style={[styles.secondaryCardIcon, { backgroundColor: theme.accentSoft }]}>
-            <IconTasks size={22} color={theme.primary} />
+          <View style={[styles.secondaryCardIcon, { backgroundColor: theme.violetSoft }]}>
+            <IconTasks size={22} color={theme.violet} />
           </View>
           <View style={styles.primaryCardText}>
             <Text style={[styles.secondaryCardTitle, { color: theme.text }]}>My Tasks</Text>

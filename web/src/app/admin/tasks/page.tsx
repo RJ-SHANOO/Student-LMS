@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { listTasks } from "@/lib/services/tasks";
+import { ModuleIcon } from "@/components/module-icon";
+import { IconTasks } from "@/components/icons";
 
 const statusStyle: Record<string, string> = {
   pending: "bg-gray-100 text-foreground dark:bg-white/10",
@@ -24,10 +26,13 @@ export default async function TasksPage({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-foreground">Tasks</h1>
+        <div className="flex items-center gap-2.5">
+          <ModuleIcon mod="tasks" icon={IconTasks} />
+          <h1 className="text-lg font-semibold text-foreground">Tasks</h1>
+        </div>
         <Link
           href="/admin/tasks/new"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+          className="rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white"
         >
           Assign Task
         </Link>

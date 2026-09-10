@@ -19,6 +19,8 @@ export const lightTheme = {
   successSoft: "#DCFCE7",
   danger: "#DC2626",
   dangerSoft: "#FEE2E2",
+  violet: "#7C3AED",
+  violetSoft: "#F3E8FF",
 };
 
 export const darkTheme = {
@@ -36,6 +38,8 @@ export const darkTheme = {
   successSoft: "rgba(34, 197, 94, 0.15)",
   danger: "#F87171",
   dangerSoft: "rgba(248, 113, 113, 0.15)",
+  violet: "#C4B5FD",
+  violetSoft: "rgba(124, 58, 237, 0.2)",
 };
 
 export type Theme = typeof lightTheme;

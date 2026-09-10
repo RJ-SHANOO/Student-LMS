@@ -11,9 +11,9 @@ export default async function SuperAdminTenantsPage() {
       <p className="mt-1 text-sm text-muted-foreground">Every institute registered on the platform.</p>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Total Institutes" value={stats.tenantCount} icon={IconBuilding} />
-        <StatCard label="Active Institutes" value={stats.activeTenantCount} icon={IconActivity} />
-        <StatCard label="Total Users" value={stats.totalUsers} icon={IconEmployees} />
+        <StatCard label="Total Institutes" value={stats.tenantCount} icon={IconBuilding} mod="students" />
+        <StatCard label="Active Institutes" value={stats.activeTenantCount} icon={IconActivity} mod="attendance" />
+        <StatCard label="Total Users" value={stats.totalUsers} icon={IconEmployees} mod="employees" />
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
@@ -85,16 +85,21 @@ function StatCard({
   label,
   value,
   icon: StatIcon,
+  mod,
 }: {
   label: string;
   value: number;
   icon: (props: { className?: string }) => React.ReactElement;
+  mod: string;
 }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-4 shadow-[var(--shadow-card)]">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-        <span className="rounded-md bg-accent-soft p-1.5 text-primary">
+        <span
+          className="rounded-md p-1.5"
+          style={{ backgroundColor: `var(--color-mod-${mod}-soft)`, color: `var(--color-mod-${mod})` }}
+        >
           <StatIcon className="h-4 w-4" />
         </span>
       </div>
