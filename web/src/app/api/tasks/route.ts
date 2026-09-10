@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { requireRole, toErrorResponse } from "@/lib/auth";
 import { createTaskSchema, listTasksQuerySchema } from "@/lib/validation/tasks";
-import { createTask, listTasks } from "@/lib/services/tasks";
+import { createTask, listTasks, listTasksForEmployee } from "@/lib/services/tasks";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,14 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireRole(request, ["admin"]);
+    const auth = requireRole(request, ["admin", "employee"]);
+    const tenantId = new ObjectId(auth.tenantId!);
+
+    if (auth.role === "employee") {
+      const tasks = await listTasksForEmployee(tenantId, new ObjectId(auth.userId));
+      return NextResponse.json({ tasks });
+    }
+
     const parsed = listTasksQuerySchema.safeParse({
       audienceType: request.nextUrl.searchParams.get("audienceType") ?? undefined,
     });
@@ -36,7 +43,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: z.treeifyError(parsed.error) }, { status: 400 });
     }
 
-    const tasks = await listTasks(new ObjectId(auth.tenantId!), parsed.data);
+    const tasks = await listTasks(tenantId, parsed.data);
     return NextResponse.json({ tasks });
   } catch (error) {
     return toErrorResponse(error);

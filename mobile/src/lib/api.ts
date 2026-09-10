@@ -110,3 +110,42 @@ export function createTask(token: string, input: CreateTaskInput): Promise<{ id:
     body: JSON.stringify(input),
   });
 }
+
+// An instructor's own tasks (one per course they teach), each with how many
+// of that course's students have completed it — mirrors the web admin list.
+export interface AssignedTask {
+  _id: string;
+  title: string;
+  description?: string;
+  audienceType: TaskAudienceType;
+  audienceValue: string;
+  dueDate?: string;
+  audienceCount: number;
+  completedCount: number;
+}
+
+export async function getMyAssignedTasks(token: string): Promise<AssignedTask[]> {
+  const { tasks } = await apiFetch("/api/tasks", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return tasks;
+}
+
+export interface TaskRosterMember {
+  userId: string;
+  name: string;
+  uniqueId?: string;
+  status: TaskStatus;
+  note?: string;
+}
+
+export interface TaskDetail extends AssignedTask {
+  roster: TaskRosterMember[];
+}
+
+export async function getTaskDetail(token: string, id: string): Promise<TaskDetail> {
+  const { task } = await apiFetch(`/api/tasks/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return task;
+}

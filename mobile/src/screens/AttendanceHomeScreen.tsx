@@ -101,15 +101,15 @@ export function AttendanceHomeScreen({ navigation }: Props) {
                 transform: [{ scale: pressed ? 0.97 : 1 }],
               },
             ]}
-            onPress={() => navigation.navigate("AssignTask")}
+            onPress={() => navigation.navigate("InstructorTasks")}
           >
             <View style={[styles.secondaryCardIcon, { backgroundColor: theme.accentSoft }]}>
               <IconClipboardList size={22} color={theme.primary} />
             </View>
             <View style={styles.primaryCardText}>
-              <Text style={[styles.secondaryCardTitle, { color: theme.text }]}>Assign Task</Text>
+              <Text style={[styles.secondaryCardTitle, { color: theme.text }]}>Assigned Tasks</Text>
               <Text style={[styles.secondaryCardSubtitle, { color: theme.textMuted }]}>
-                Give your students something to complete
+                Assign work to your courses and track completion
               </Text>
             </View>
           </Pressable>

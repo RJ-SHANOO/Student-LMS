@@ -26,6 +26,12 @@ function audienceField(audienceType: "course" | "department") {
   return audienceType === "course" ? "course" : "department";
 }
 
+async function getCoursesTaught(tenantId: ObjectId, employeeId: ObjectId) {
+  const users = await usersCollection();
+  const employee = await users.findOne({ _id: employeeId, tenantId });
+  return (employee?.coursesTaught ?? []).map((c) => c.toUpperCase());
+}
+
 // Admins can target any course or department. Employees may only target a
 // course they're listed as teaching (their own `coursesTaught`) — department-
 // wide tasks stay admin-only, since there's no "owns this department" concept
@@ -38,9 +44,7 @@ async function assertCanAssign(actor: TaskActor, audienceType: "course" | "depar
   if (audienceType !== "course") {
     throw new AuthError("You can only assign tasks to a course", 403);
   }
-  const users = await usersCollection();
-  const employee = await users.findOne({ _id: new ObjectId(actor.userId), tenantId: new ObjectId(actor.tenantId) });
-  const taught = (employee?.coursesTaught ?? []).map((c) => c.toUpperCase());
+  const taught = await getCoursesTaught(new ObjectId(actor.tenantId), new ObjectId(actor.userId));
   if (!taught.includes(audienceValue.toUpperCase())) {
     throw new AuthError("You can only assign tasks to your own course", 403);
   }
@@ -73,13 +77,8 @@ export async function createTask(actor: TaskActor, input: CreateTaskInput) {
   return { id: result.insertedId };
 }
 
-// Admin's task list, with each task's completion progress across its audience.
-export async function listTasks(tenantId: ObjectId, filters: ListTasksQuery = {}) {
+async function listTasksWithProgress(tenantId: ObjectId, match: Filter<Task>) {
   const tasks = await tasksCollection();
-
-  const match: Filter<Task> = { tenantId };
-  if (filters.audienceType) match.audienceType = filters.audienceType;
-
   const results = await tasks.find(match).sort({ createdAt: -1 }).toArray();
 
   const users = await usersCollection();
@@ -103,6 +102,24 @@ export async function listTasks(tenantId: ObjectId, filters: ListTasksQuery = {}
       return { ...task, audienceCount, completedCount };
     })
   );
+}
+
+// Admin's task list, with each task's completion progress across its audience.
+export async function listTasks(tenantId: ObjectId, filters: ListTasksQuery = {}) {
+  const match: Filter<Task> = { tenantId };
+  if (filters.audienceType) match.audienceType = filters.audienceType;
+  return listTasksWithProgress(tenantId, match);
+}
+
+// An instructor's own view: tasks for the courses they teach, with the same
+// per-audience progress an admin sees — but scoped to their courses only.
+export async function listTasksForEmployee(tenantId: ObjectId, employeeId: ObjectId) {
+  const users = await usersCollection();
+  const employee = await users.findOne({ _id: employeeId, tenantId });
+  const taught = employee?.coursesTaught ?? [];
+  if (taught.length === 0) return [];
+
+  return listTasksWithProgress(tenantId, { tenantId, audienceType: "course", audienceValue: { $in: taught } });
 }
 
 // Self-service: tasks visible to a student (by course) or employee (by department),
@@ -175,6 +192,21 @@ export async function getTask(tenantId: ObjectId, id: string) {
   });
 
   return { ...task, roster };
+}
+
+// Admins can view any task's roster. Employees can only view tasks for a
+// course they teach — mirrors the same restriction createTask enforces.
+export async function getTaskForActor(actor: TaskActor, id: string) {
+  const task = await getTask(new ObjectId(actor.tenantId), id);
+  if (actor.role === "admin") return task;
+  if (actor.role !== "employee") {
+    throw new AuthError("Forbidden", 403);
+  }
+  const taught = await getCoursesTaught(new ObjectId(actor.tenantId), new ObjectId(actor.userId));
+  if (task.audienceType !== "course" || !taught.includes(task.audienceValue.toUpperCase())) {
+    throw new AuthError("Task not found", 404);
+  }
+  return task;
 }
 
 // Admin-only: retitle/re-describe/reschedule a task. Audience is fixed at creation.

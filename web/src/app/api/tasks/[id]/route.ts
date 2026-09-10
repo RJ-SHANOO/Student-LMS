@@ -3,13 +3,13 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { requireRole, toErrorResponse } from "@/lib/auth";
 import { updateTaskSchema } from "@/lib/validation/tasks";
-import { getTask, updateTask } from "@/lib/services/tasks";
+import { getTaskForActor, updateTask } from "@/lib/services/tasks";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = requireRole(request, ["admin"]);
+    const auth = requireRole(request, ["admin", "employee"]);
     const { id } = await params;
-    const task = await getTask(new ObjectId(auth.tenantId!), id);
+    const task = await getTaskForActor({ userId: auth.userId, tenantId: auth.tenantId!, role: auth.role }, id);
     return NextResponse.json({ task });
   } catch (error) {
     return toErrorResponse(error);
