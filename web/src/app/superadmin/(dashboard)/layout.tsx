@@ -16,24 +16,33 @@ export default async function SuperAdminLayout({ children }: { children: React.R
 
   return (
     <div className="min-h-screen bg-background">
-      <ThemeOverride preference={account.themePreference ?? "system"} />
-      <header className="flex items-center justify-between border-b border-border bg-surface px-6 py-3">
+      <ThemeOverride preference={account.themePreference ?? "light"} />
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface px-6 py-3 shadow-[var(--shadow-card)]">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Logo size={28} />
             <span className="ml-1 text-sm text-muted-foreground">Super Admin</span>
           </div>
-          <nav className="flex gap-4 text-sm">
-            <Link href="/superadmin/tenants" className="text-muted-foreground hover:text-foreground">
+          <nav className="flex gap-1 text-sm">
+            <Link
+              href="/superadmin/tenants"
+              className="rounded-md px-2.5 py-1.5 text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+            >
               Tenants
             </Link>
-            <Link href="/superadmin/settings" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/superadmin/settings"
+              className="rounded-md px-2.5 py-1.5 text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+            >
               Settings
             </Link>
           </nav>
         </div>
         <form action={logoutSuperAdminAction}>
-          <button type="submit" className="text-sm text-muted-foreground hover:text-foreground">
+          <button
+            type="submit"
+            className="rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+          >
             Log out
           </button>
         </form>

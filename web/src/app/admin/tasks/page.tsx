@@ -49,7 +49,7 @@ export default async function TasksPage({
         </button>
       </form>
 
-      <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface">
+      <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-background text-left text-xs uppercase text-muted-foreground">
             <tr>

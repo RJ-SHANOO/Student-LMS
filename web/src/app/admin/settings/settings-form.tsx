@@ -23,7 +23,7 @@ export function SettingsForm({
   const [state, formAction, pending] = useActionState(updateSettingsAction, initialState);
 
   return (
-    <form action={formAction} className="mt-6 max-w-md space-y-6 rounded-lg border border-border bg-surface p-6">
+    <form action={formAction} className="mt-6 max-w-md space-y-6 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
       <div>
         <Field label="Institute Name" name="instituteName" type="text" defaultValue={instituteName} />
       </div>

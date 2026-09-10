@@ -32,7 +32,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
         ← Back to tasks
       </Link>
 
-      <div className="mt-4 rounded-lg border border-border bg-surface p-6">
+      <div className="mt-4 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-lg font-semibold text-foreground">{task.title}</h1>

@@ -14,7 +14,7 @@ export default async function SuperAdminTenantsPage() {
         <StatCard label="Total Users" value={stats.totalUsers} />
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-surface">
+      <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-background text-left text-xs uppercase text-muted-foreground">
             <tr>
@@ -81,7 +81,7 @@ export default async function SuperAdminTenantsPage() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-4">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-foreground">{value}</p>
     </div>

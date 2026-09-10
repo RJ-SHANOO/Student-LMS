@@ -9,7 +9,7 @@ export function NewFeeForm({ students }: { students: { id: string; name: string;
   const [state, formAction, pending] = useActionState(createFeeAction, initialState);
 
   return (
-    <form action={formAction} className="mt-6 space-y-4 rounded-lg border border-border bg-surface p-6">
+    <form action={formAction} className="mt-6 space-y-4 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
       <div>
         <label htmlFor="studentId" className="block text-sm font-medium text-foreground">
           Student

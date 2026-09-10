@@ -16,7 +16,7 @@ export default function NewStudentPage() {
       </Link>
       <h1 className="mt-2 text-lg font-semibold text-foreground">Add Student</h1>
 
-      <form action={formAction} className="mt-6 space-y-4 rounded-lg border border-border bg-surface p-6">
+      <form action={formAction} className="mt-6 space-y-4 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
         <Field label="Full Name" name="name" required />
         <Field label="CNIC (13 digits)" name="cnic" required placeholder="3520212345671" />
         <Field label="Date of Birth" name="dob" type="date" required />

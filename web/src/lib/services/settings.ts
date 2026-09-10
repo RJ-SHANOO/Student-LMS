@@ -17,7 +17,7 @@ export async function createDefaultSettings(tenantId: ObjectId, instituteName: s
     instituteName,
     officeRadius: DEFAULT_OFFICE_RADIUS_METERS,
     lateAfterTime: DEFAULT_LATE_AFTER_TIME,
-    themePreference: "system",
+    themePreference: "light",
   });
 }
 
@@ -32,7 +32,7 @@ export async function getSettings(tenantId: ObjectId): Promise<Settings> {
     instituteName: "",
     officeRadius: DEFAULT_OFFICE_RADIUS_METERS,
     lateAfterTime: DEFAULT_LATE_AFTER_TIME,
-    themePreference: "system",
+    themePreference: "light",
   };
   await settings.insertOne(fallback);
   return fallback;

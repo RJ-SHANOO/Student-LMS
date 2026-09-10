@@ -13,7 +13,7 @@ export function NewTaskForm({
   const [state, formAction, pending] = useActionState(createTaskAction, initialState);
 
   return (
-    <form action={formAction} className="mt-6 space-y-4 rounded-lg border border-border bg-surface p-6">
+    <form action={formAction} className="mt-6 space-y-4 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
       <div>
         <label htmlFor="assignedTo" className="block text-sm font-medium text-foreground">
           Assign To

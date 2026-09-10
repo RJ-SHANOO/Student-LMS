@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ThemeScript />
+        <ThemeScript forced="light" />
         {children}
       </body>
     </html>

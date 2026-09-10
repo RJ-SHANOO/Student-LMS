@@ -10,7 +10,7 @@ export function SuperAdminSettingsForm({ themePreference }: { themePreference?: 
   const [state, formAction, pending] = useActionState(updateSuperAdminSettingsAction, initialState);
 
   return (
-    <form action={formAction} className="mt-6 max-w-md space-y-6 rounded-lg border border-border bg-surface p-6">
+    <form action={formAction} className="mt-6 max-w-md space-y-6 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
       <div>
         <label htmlFor="themePreference" className="block text-sm font-medium text-foreground">
           Theme

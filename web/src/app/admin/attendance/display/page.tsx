@@ -10,7 +10,7 @@ export default function AttendanceDisplayPage() {
         </Link>
       </div>
       <h1 className="mt-2 text-lg font-semibold text-foreground">Scan to Check In</h1>
-      <div className="mt-6 rounded-lg border border-border bg-surface p-8">
+      <div className="mt-6 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-8">
         <QrDisplay />
       </div>
     </div>

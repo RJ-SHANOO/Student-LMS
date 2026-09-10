@@ -10,8 +10,8 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAdminAction, initialState);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-8 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_50%_0%,var(--color-accent-soft),var(--color-background)_60%)] px-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-[var(--shadow-card)]">
         <Logo size={72} className="mx-auto" />
         <p className="mt-3 text-center text-sm text-muted-foreground">Tenant Admin Login</p>
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
               type="email"
               required
               autoComplete="email"
-              className="mt-1 block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="mt-1 block w-full rounded-md border border-border px-3 py-2 text-sm outline-none transition-shadow focus:border-primary focus:ring-2 focus:ring-accent/30"
             />
           </div>
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
               type="password"
               required
               autoComplete="current-password"
-              className="mt-1 block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="mt-1 block w-full rounded-md border border-border px-3 py-2 text-sm outline-none transition-shadow focus:border-primary focus:ring-2 focus:ring-accent/30"
             />
           </div>
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
           >
             {pending ? "Signing in..." : "Sign in"}
           </button>
