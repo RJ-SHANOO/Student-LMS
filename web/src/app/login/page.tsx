@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_50%_0%,var(--color-accent-soft),var(--color-background)_60%)] px-4">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-[var(--shadow-card)]">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-[var(--shadow-card)] animate-fade-in-up">
         <Logo size={72} className="mx-auto" />
         <p className="mt-3 text-center text-sm text-muted-foreground">Tenant Admin Login</p>
 

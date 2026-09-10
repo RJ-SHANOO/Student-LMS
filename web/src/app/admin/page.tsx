@@ -71,7 +71,7 @@ export default async function AdminDashboardPage() {
           <Link
             key={label}
             href={href}
-            className="group rounded-lg border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition-colors hover:border-accent"
+            className="group rounded-lg border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
           >
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>

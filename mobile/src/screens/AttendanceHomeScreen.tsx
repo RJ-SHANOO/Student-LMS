@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
@@ -39,6 +39,7 @@ export function AttendanceHomeScreen({ navigation }: Props) {
           </View>
         </View>
         <TouchableOpacity
+          activeOpacity={0.8}
           onPress={handleLogout}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           style={[styles.logoutButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
@@ -48,9 +49,12 @@ export function AttendanceHomeScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[styles.primaryCard, cardShadow, { backgroundColor: theme.primary }]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.primaryCard,
+            cardShadow,
+            { backgroundColor: theme.primary, transform: [{ scale: pressed ? 0.97 : 1 }] },
+          ]}
           onPress={() => navigation.navigate("Scan")}
         >
           <View style={styles.primaryCardIcon}>
@@ -60,11 +64,18 @@ export function AttendanceHomeScreen({ navigation }: Props) {
             <Text style={styles.primaryCardTitle}>Mark Attendance</Text>
             <Text style={styles.primaryCardSubtitle}>Scan the QR code at reception</Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[styles.secondaryCard, cardShadow, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.secondaryCard,
+            cardShadow,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+              transform: [{ scale: pressed ? 0.97 : 1 }],
+            },
+          ]}
           onPress={() => navigation.navigate("Tasks")}
         >
           <View style={[styles.secondaryCardIcon, { backgroundColor: theme.accentSoft }]}>
@@ -76,7 +87,7 @@ export function AttendanceHomeScreen({ navigation }: Props) {
               View and complete what's assigned to you
             </Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <Text style={[styles.footer, { color: theme.textMuted }]}>SOIL — The Innovators</Text>

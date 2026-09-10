@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
@@ -15,6 +15,22 @@ type Stage = "capturing" | "submitting" | "success" | "error";
 // Gives the front camera a moment to focus/expose before the automatic
 // capture — CLAUDE.md requires a live auto-selfie, never a manual shutter.
 const CAPTURE_DELAY_MS = 1200;
+
+// A small pop-in for the result icon badge — the one moment this screen
+// should feel alive, kept to a single spring so it doesn't overdo it.
+function AnimatedIconBadge({ backgroundColor, children }: { backgroundColor: string; children: React.ReactNode }) {
+  const scale = useRef(new Animated.Value(0.5)).current;
+
+  useEffect(() => {
+    Animated.spring(scale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }).start();
+  }, [scale]);
+
+  return (
+    <Animated.View style={[styles.iconBadge, { backgroundColor, transform: [{ scale }] }]}>
+      {children}
+    </Animated.View>
+  );
+}
 
 export function SelfieScreen({ route, navigation }: Props) {
   const theme = useTheme();
@@ -60,13 +76,14 @@ export function SelfieScreen({ route, navigation }: Props) {
   if (!permission.granted) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <View style={[styles.iconBadge, { backgroundColor: theme.accentSoft }]}>
+        <AnimatedIconBadge backgroundColor={theme.accentSoft}>
           <IconCamera size={30} color={theme.primary} />
-        </View>
+        </AnimatedIconBadge>
         <Text style={[styles.message, { color: theme.text }]}>
           Camera access is needed to capture your check-in selfie.
         </Text>
         <TouchableOpacity
+          activeOpacity={0.8}
           style={[styles.doneButton, { backgroundColor: theme.primary }]}
           onPress={requestPermission}
         >
@@ -80,9 +97,9 @@ export function SelfieScreen({ route, navigation }: Props) {
     const isLate = result?.status === "late";
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <View style={[styles.iconBadge, { backgroundColor: isLate ? theme.dangerSoft : theme.successSoft }]}>
+        <AnimatedIconBadge backgroundColor={isLate ? theme.dangerSoft : theme.successSoft}>
           <IconCheckCircle size={34} color={isLate ? theme.danger : theme.success} />
-        </View>
+        </AnimatedIconBadge>
         <Text style={[styles.successTitle, { color: theme.text }]}>
           {isLate ? "Checked in (Late)" : "Checked in!"}
         </Text>
@@ -90,6 +107,7 @@ export function SelfieScreen({ route, navigation }: Props) {
           {result?.checkInTime ? new Date(result.checkInTime).toLocaleTimeString() : ""}
         </Text>
         <TouchableOpacity
+          activeOpacity={0.8}
           style={[styles.doneButton, { backgroundColor: theme.primary }]}
           onPress={() => navigation.replace("Attendance")}
         >
@@ -102,11 +120,12 @@ export function SelfieScreen({ route, navigation }: Props) {
   if (stage === "error") {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <View style={[styles.iconBadge, { backgroundColor: theme.dangerSoft }]}>
+        <AnimatedIconBadge backgroundColor={theme.dangerSoft}>
           <IconAlertCircle size={30} color={theme.danger} />
-        </View>
+        </AnimatedIconBadge>
         <Text style={[styles.message, { color: theme.text }]}>{error}</Text>
         <TouchableOpacity
+          activeOpacity={0.8}
           style={[styles.doneButton, { backgroundColor: theme.primary }]}
           onPress={() => navigation.replace("Attendance")}
         >

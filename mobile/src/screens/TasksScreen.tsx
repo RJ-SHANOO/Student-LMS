@@ -66,6 +66,7 @@ export function TasksScreen({ navigation }: Props) {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <TouchableOpacity
+          activeOpacity={0.8}
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           style={[styles.backButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
@@ -111,6 +112,7 @@ export function TasksScreen({ navigation }: Props) {
                 )}
                 {item.status !== "completed" && (
                   <TouchableOpacity
+          activeOpacity={0.8}
                     style={[styles.completeButton, { backgroundColor: theme.primary }]}
                     onPress={() => handleComplete(item)}
                     disabled={updatingId === item._id}

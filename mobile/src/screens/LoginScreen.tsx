@@ -107,6 +107,7 @@ export function LoginScreen({ navigation }: Props) {
           )}
 
           <TouchableOpacity
+          activeOpacity={0.8}
             style={[styles.button, { backgroundColor: theme.primary, opacity: loading ? 0.6 : 1 }]}
             onPress={handleLogin}
             disabled={loading}

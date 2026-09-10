@@ -57,6 +57,7 @@ export function ScanScreen({ navigation }: Props) {
           Camera access is needed to scan the attendance QR code.
         </Text>
         <TouchableOpacity
+          activeOpacity={0.8}
           style={[styles.primaryButton, { backgroundColor: theme.primary }]}
           onPress={requestPermission}
         >
@@ -76,6 +77,7 @@ export function ScanScreen({ navigation }: Props) {
       />
 
       <TouchableOpacity
+        activeOpacity={0.8}
         style={styles.backButton}
         onPress={() => navigation.goBack()}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
