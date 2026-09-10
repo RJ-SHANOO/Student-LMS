@@ -32,6 +32,7 @@ export async function createEmployeeAction(
     dob: formData.get("dob"),
     department: formData.get("department"),
     designation: formData.get("designation"),
+    coursesTaught: formData.get("coursesTaught") || undefined,
   });
 
   if (!parsed.success) {

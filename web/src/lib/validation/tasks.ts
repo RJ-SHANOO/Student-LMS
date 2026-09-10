@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+export const taskAudienceTypeSchema = z.enum(["course", "department"]);
+
 export const createTaskSchema = z.object({
-  assignedTo: z.string().min(1, "Assignee is required"),
+  audienceType: taskAudienceTypeSchema,
+  audienceValue: z.string().trim().min(1, "Required").max(50, "Max 50 characters"),
   title: z.string().trim().min(2, "Title is too short"),
   description: z.string().trim().max(2000).optional(),
   dueDate: z
@@ -10,10 +13,7 @@ export const createTaskSchema = z.object({
     .optional(),
 });
 
-export const taskStatusSchema = z.enum(["pending", "in-progress", "completed"]);
-
 export const updateTaskSchema = z.object({
-  status: taskStatusSchema.optional(),
   title: z.string().trim().min(2).optional(),
   description: z.string().trim().max(2000).optional(),
   dueDate: z
@@ -22,7 +22,13 @@ export const updateTaskSchema = z.object({
     .optional(),
 });
 
+export const taskStatusSchema = z.enum(["pending", "in-progress", "completed"]);
+
+export const updateTaskCompletionSchema = z.object({
+  status: taskStatusSchema,
+  note: z.string().trim().max(1000).optional(),
+});
+
 export const listTasksQuerySchema = z.object({
-  assignedTo: z.string().min(1).optional(),
-  status: taskStatusSchema.optional(),
+  audienceType: taskAudienceTypeSchema.optional(),
 });

@@ -26,6 +26,7 @@ interface LoginMemberResult {
     name: string;
     role: "employee" | "student";
     uniqueId?: string;
+    coursesTaught?: string[];
   };
 }
 
@@ -64,12 +65,14 @@ export function markAttendance(token: string, input: MarkAttendanceInput): Promi
 }
 
 export type TaskStatus = "pending" | "in-progress" | "completed";
+export type TaskAudienceType = "course" | "department";
 
 export interface Task {
   _id: string;
   title: string;
   description?: string;
   status: TaskStatus;
+  note?: string;
   dueDate?: string;
 }
 
@@ -80,10 +83,30 @@ export async function getMyTasks(token: string): Promise<Task[]> {
   return tasks;
 }
 
-export function updateTaskStatus(token: string, id: string, status: TaskStatus): Promise<{ task: Task }> {
-  return apiFetch(`/api/tasks/${id}`, {
+export function updateTaskCompletion(
+  token: string,
+  id: string,
+  input: { status: TaskStatus; note?: string }
+): Promise<{ status: TaskStatus; note?: string }> {
+  return apiFetch(`/api/tasks/${id}/complete`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(input),
+  });
+}
+
+interface CreateTaskInput {
+  audienceType: TaskAudienceType;
+  audienceValue: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+}
+
+export function createTask(token: string, input: CreateTaskInput): Promise<{ id: string }> {
+  return apiFetch("/api/tasks", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
   });
 }

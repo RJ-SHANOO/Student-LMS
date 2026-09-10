@@ -43,6 +43,7 @@ export function LoginScreen({ navigation }: Props) {
         name: result.user.name,
         role: result.user.role,
         uniqueId: result.user.uniqueId,
+        coursesTaught: result.user.coursesTaught,
       };
       await saveSession(session);
       setSession(session);

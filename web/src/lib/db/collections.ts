@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/mongodb";
-import type { ActivityLog, Attendance, Fee, Settings, SuperAdmin, Task, Tenant, User } from "@/types/models";
+import type { ActivityLog, Attendance, Fee, Settings, SuperAdmin, Task, TaskCompletion, Tenant, User } from "@/types/models";
 
 export async function tenantsCollection() {
   const db = await getDb();
@@ -31,6 +31,11 @@ export async function tasksCollection() {
   return db.collection<Task>("tasks");
 }
 
+export async function taskCompletionsCollection() {
+  const db = await getDb();
+  return db.collection<TaskCompletion>("taskCompletions");
+}
+
 export async function activityLogCollection() {
   const db = await getDb();
   return db.collection<ActivityLog>("activityLog");
@@ -57,16 +62,18 @@ let indexesEnsured = false;
 export async function ensureIndexes() {
   if (indexesEnsured) return;
 
-  const [tenants, users, settings, attendance, fees, tasks, activityLog, superAdmins] = await Promise.all([
-    tenantsCollection(),
-    usersCollection(),
-    settingsCollection(),
-    attendanceCollection(),
-    feesCollection(),
-    tasksCollection(),
-    activityLogCollection(),
-    superAdminsCollection(),
-  ]);
+  const [tenants, users, settings, attendance, fees, tasks, taskCompletions, activityLog, superAdmins] =
+    await Promise.all([
+      tenantsCollection(),
+      usersCollection(),
+      settingsCollection(),
+      attendanceCollection(),
+      feesCollection(),
+      tasksCollection(),
+      taskCompletionsCollection(),
+      activityLogCollection(),
+      superAdminsCollection(),
+    ]);
 
   await Promise.all([
     tenants.createIndex({ ownerEmail: 1 }, { unique: true }),
@@ -77,7 +84,8 @@ export async function ensureIndexes() {
     settings.createIndex({ tenantId: 1 }, { unique: true }),
     attendance.createIndex({ tenantId: 1, userId: 1, date: 1 }, { unique: true }),
     fees.createIndex({ tenantId: 1, studentId: 1 }),
-    tasks.createIndex({ tenantId: 1, assignedTo: 1 }),
+    tasks.createIndex({ tenantId: 1, audienceType: 1, audienceValue: 1 }),
+    taskCompletions.createIndex({ tenantId: 1, taskId: 1, userId: 1 }, { unique: true }),
     activityLog.createIndex({ tenantId: 1, timestamp: -1 }),
     superAdmins.createIndex({ email: 1 }, { unique: true }),
   ]);

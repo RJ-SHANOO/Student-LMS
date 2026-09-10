@@ -1,91 +1,141 @@
 import { ObjectId, type Filter } from "mongodb";
-import { tasksCollection, usersCollection } from "@/lib/db/collections";
+import { tasksCollection, taskCompletionsCollection, usersCollection } from "@/lib/db/collections";
 import { AuthError } from "@/lib/auth";
 import { logActivity } from "@/lib/services/activity-log";
 import type { Task, UserRole } from "@/types/models";
-import type { createTaskSchema, listTasksQuerySchema, updateTaskSchema } from "@/lib/validation/tasks";
+import type {
+  createTaskSchema,
+  listTasksQuerySchema,
+  updateTaskCompletionSchema,
+  updateTaskSchema,
+} from "@/lib/validation/tasks";
 import type { z } from "zod";
 
 type CreateTaskInput = z.infer<typeof createTaskSchema>;
 type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+type UpdateCompletionInput = z.infer<typeof updateTaskCompletionSchema>;
 type ListTasksQuery = z.infer<typeof listTasksQuerySchema>;
 
-export async function createTask(tenantId: ObjectId, input: CreateTaskInput, actorId: ObjectId) {
-  if (!ObjectId.isValid(input.assignedTo)) {
-    throw new AuthError("Assignee not found", 404);
-  }
+export interface TaskActor {
+  userId: string;
+  tenantId: string;
+  role: UserRole;
+}
 
+function audienceField(audienceType: "course" | "department") {
+  return audienceType === "course" ? "course" : "department";
+}
+
+// Admins can target any course or department. Employees may only target a
+// course they're listed as teaching (their own `coursesTaught`) — department-
+// wide tasks stay admin-only, since there's no "owns this department" concept
+// for employees the way there is for an instructor and their course.
+async function assertCanAssign(actor: TaskActor, audienceType: "course" | "department", audienceValue: string) {
+  if (actor.role === "admin") return;
+  if (actor.role !== "employee") {
+    throw new AuthError("Forbidden", 403);
+  }
+  if (audienceType !== "course") {
+    throw new AuthError("You can only assign tasks to a course", 403);
+  }
   const users = await usersCollection();
-  const assignee = await users.findOne({
-    _id: new ObjectId(input.assignedTo),
-    tenantId,
-    role: { $in: ["employee", "student"] },
-  });
-  if (!assignee) {
-    throw new AuthError("Assignee not found", 404);
+  const employee = await users.findOne({ _id: new ObjectId(actor.userId), tenantId: new ObjectId(actor.tenantId) });
+  const taught = (employee?.coursesTaught ?? []).map((c) => c.toUpperCase());
+  if (!taught.includes(audienceValue.toUpperCase())) {
+    throw new AuthError("You can only assign tasks to your own course", 403);
   }
+}
 
+export async function createTask(actor: TaskActor, input: CreateTaskInput) {
+  const audienceValue = input.audienceValue.toUpperCase();
+  await assertCanAssign(actor, input.audienceType, audienceValue);
+
+  const tenantId = new ObjectId(actor.tenantId);
   const tasks = await tasksCollection();
   const result = await tasks.insertOne({
     tenantId,
-    assignedTo: assignee._id!,
+    audienceType: input.audienceType,
+    audienceValue,
     title: input.title,
     description: input.description,
-    status: "pending",
     dueDate: input.dueDate ? new Date(input.dueDate) : undefined,
+    createdBy: new ObjectId(actor.userId),
+    createdAt: new Date(),
   });
 
   await logActivity({
     tenantId,
-    userId: actorId,
+    userId: new ObjectId(actor.userId),
     action: "task_assigned",
-    description: `Assigned "${input.title}" to ${assignee.name}`,
+    description: `Assigned "${input.title}" to ${input.audienceType} ${audienceValue}`,
   });
 
   return { id: result.insertedId };
 }
 
+// Admin's task list, with each task's completion progress across its audience.
 export async function listTasks(tenantId: ObjectId, filters: ListTasksQuery = {}) {
   const tasks = await tasksCollection();
 
   const match: Filter<Task> = { tenantId };
-  if (filters.assignedTo && ObjectId.isValid(filters.assignedTo)) {
-    match.assignedTo = new ObjectId(filters.assignedTo);
-  }
-  if (filters.status) match.status = filters.status;
+  if (filters.audienceType) match.audienceType = filters.audienceType;
 
-  return tasks
-    .aggregate([
-      { $match: match },
-      { $sort: { dueDate: 1 } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "assignedTo",
-          foreignField: "_id",
-          as: "assignee",
-        },
-      },
-      { $unwind: "$assignee" },
-      {
-        $project: {
-          title: 1,
-          description: 1,
-          status: 1,
-          dueDate: 1,
-          "assignee.name": 1,
-          "assignee.role": 1,
-          "assignee.uniqueId": 1,
-        },
-      },
-    ])
-    .toArray();
+  const results = await tasks.find(match).sort({ createdAt: -1 }).toArray();
+
+  const users = await usersCollection();
+  const completions = await taskCompletionsCollection();
+
+  return Promise.all(
+    results.map(async (task) => {
+      const field = audienceField(task.audienceType);
+      const audienceCount = await users.countDocuments({
+        tenantId,
+        role: task.audienceType === "course" ? "student" : "employee",
+        status: "active",
+        [field]: task.audienceValue,
+      });
+      const completedCount = await completions.countDocuments({
+        tenantId,
+        taskId: task._id,
+        status: "completed",
+      });
+
+      return { ...task, audienceCount, completedCount };
+    })
+  );
 }
 
-// Self-service: only the assigned employee/student's own tasks.
+// Self-service: tasks visible to a student (by course) or employee (by department),
+// merged with that user's own completion status (defaults to "pending" if untouched).
 export async function listMyTasks(tenantId: ObjectId, userId: ObjectId) {
+  const users = await usersCollection();
+  const user = await users.findOne({ _id: userId, tenantId });
+  if (!user) return [];
+
+  const audienceType = user.role === "student" ? "course" : "department";
+  const audienceValue = user.role === "student" ? user.course : user.department;
+  if (!audienceValue) return [];
+
   const tasks = await tasksCollection();
-  return tasks.find({ tenantId, assignedTo: userId }).sort({ dueDate: 1 }).toArray();
+  const myTasks = await tasks
+    .find({ tenantId, audienceType, audienceValue })
+    .sort({ dueDate: 1 })
+    .toArray();
+
+  const completions = await taskCompletionsCollection();
+  const myCompletions = await completions
+    .find({ tenantId, userId, taskId: { $in: myTasks.map((t) => t._id!) } })
+    .toArray();
+  const byTaskId = new Map(myCompletions.map((c) => [c.taskId.toString(), c]));
+
+  return myTasks.map((task) => {
+    const completion = byTaskId.get(task._id!.toString());
+    return {
+      ...task,
+      status: completion?.status ?? "pending",
+      note: completion?.note,
+    };
+  });
 }
 
 export async function getTask(tenantId: ObjectId, id: string) {
@@ -99,63 +149,89 @@ export async function getTask(tenantId: ObjectId, id: string) {
   }
 
   const users = await usersCollection();
-  const assignee = await users.findOne({ _id: task.assignedTo });
+  const field = audienceField(task.audienceType);
+  const audience = await users
+    .find({
+      tenantId,
+      role: task.audienceType === "course" ? "student" : "employee",
+      [field]: task.audienceValue,
+    })
+    .sort({ name: 1 })
+    .toArray();
 
-  return { ...task, assignee };
+  const completions = await taskCompletionsCollection();
+  const taskCompletions = await completions.find({ tenantId, taskId: task._id }).toArray();
+  const byUserId = new Map(taskCompletions.map((c) => [c.userId.toString(), c]));
+
+  const roster = audience.map((member) => {
+    const completion = byUserId.get(member._id!.toString());
+    return {
+      userId: member._id!.toString(),
+      name: member.name,
+      uniqueId: member.uniqueId,
+      status: completion?.status ?? "pending",
+      note: completion?.note,
+    };
+  });
+
+  return { ...task, roster };
 }
 
-export interface UpdateTaskAuth {
-  userId: string;
-  tenantId: string;
-  role: UserRole;
-}
-
-// Admins can update any field on any task in their tenant. Employees/students
-// may only flip the status of a task assigned to themselves — they can't
-// retitle, reassign, or touch anyone else's task.
-export async function updateTask(auth: UpdateTaskAuth, id: string, input: UpdateTaskInput) {
+// Admin-only: retitle/re-describe/reschedule a task. Audience is fixed at creation.
+export async function updateTask(tenantId: ObjectId, id: string, input: UpdateTaskInput) {
   if (!ObjectId.isValid(id)) {
     throw new AuthError("Task not found", 404);
   }
   const tasks = await tasksCollection();
-  const tenantId = new ObjectId(auth.tenantId);
-  const task = await tasks.findOne({ _id: new ObjectId(id), tenantId });
+  const update: Partial<Task> = {
+    ...(input.title && { title: input.title }),
+    ...(input.description !== undefined && { description: input.description }),
+    ...(input.dueDate && { dueDate: new Date(input.dueDate) }),
+  };
+
+  const updated = await tasks.findOneAndUpdate({ _id: new ObjectId(id), tenantId }, { $set: update }, { returnDocument: "after" });
+  if (!updated) {
+    throw new AuthError("Task not found", 404);
+  }
+  return updated;
+}
+
+// Self-service: a student/employee marks their own progress on a task in their
+// audience. Upserts their TaskCompletion row — the task document itself never
+// carries a shared status.
+export async function upsertMyCompletion(actor: TaskActor, taskId: string, input: UpdateCompletionInput) {
+  if (!ObjectId.isValid(taskId)) {
+    throw new AuthError("Task not found", 404);
+  }
+  const tenantId = new ObjectId(actor.tenantId);
+  const tasks = await tasksCollection();
+  const task = await tasks.findOne({ _id: new ObjectId(taskId), tenantId });
   if (!task) {
     throw new AuthError("Task not found", 404);
   }
 
-  let update: Partial<Task>;
-  if (auth.role === "admin") {
-    update = {
-      ...(input.status && { status: input.status }),
-      ...(input.title && { title: input.title }),
-      ...(input.description !== undefined && { description: input.description }),
-      ...(input.dueDate && { dueDate: new Date(input.dueDate) }),
-    };
-  } else {
-    if (task.assignedTo.toString() !== auth.userId) {
-      throw new AuthError("You can only update your own tasks", 403);
-    }
-    if (!input.status) {
-      throw new AuthError("Only the task status can be updated", 400);
-    }
-    update = { status: input.status };
+  const users = await usersCollection();
+  const user = await users.findOne({ _id: new ObjectId(actor.userId), tenantId });
+  const myValue = task.audienceType === "course" ? user?.course : user?.department;
+  if (!myValue || myValue !== task.audienceValue) {
+    throw new AuthError("This task isn't assigned to you", 403);
   }
 
-  const updated = await tasks.findOneAndUpdate(
-    { _id: task._id, tenantId },
-    { $set: update },
-    { returnDocument: "after" }
+  const completions = await taskCompletionsCollection();
+  const userId = new ObjectId(actor.userId);
+  const now = new Date();
+  await completions.updateOne(
+    { tenantId, taskId: task._id!, userId },
+    { $set: { status: input.status, note: input.note, updatedAt: now }, $setOnInsert: { tenantId, taskId: task._id!, userId } },
+    { upsert: true }
   );
 
   await logActivity({
     tenantId,
-    userId: new ObjectId(auth.userId),
-    action: input.status ? "task_status_changed" : "task_updated",
-    description: input.status
-      ? `Set task "${updated!.title}" to ${input.status}`
-      : `Updated task "${updated!.title}"`,
+    userId,
+    action: "task_status_changed",
+    description: `Set task "${task.title}" to ${input.status}`,
   });
 
-  return updated!;
+  return { status: input.status, note: input.note };
 }

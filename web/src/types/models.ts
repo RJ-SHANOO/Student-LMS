@@ -5,6 +5,7 @@ export type TenantStatus = "active" | "inactive";
 export type AttendanceStatus = "present" | "late" | "absent";
 export type FeeStatus = "paid" | "partial" | "unpaid";
 export type TaskStatus = "pending" | "in-progress" | "completed";
+export type TaskAudienceType = "course" | "department";
 export type ThemePreference = "light" | "dark" | "system";
 
 // SOIL's own team — platform-wide, not scoped to any tenant, kept in its own
@@ -44,6 +45,9 @@ export interface User {
   batch?: string;
   // Employees only.
   designation?: string;
+  // Employees only — course codes (matches Student.course) this employee teaches.
+  // Drives which courses they're allowed to assign tasks to.
+  coursesTaught?: string[];
   status: "active" | "inactive";
   // Auto-generated for students as {tenantCode}-{department}-{course}-{batch}-{year}-{seq}.
   uniqueId?: string;
@@ -78,14 +82,29 @@ export interface Fee {
   dueDate: Date;
 }
 
+// A task now targets a whole course or department, not one person — every
+// student in that course (or employee in that department) sees it. Individual
+// progress lives separately in TaskCompletion, one per (task, user).
 export interface Task {
   _id?: ObjectId;
   tenantId: ObjectId;
-  assignedTo: ObjectId;
+  audienceType: TaskAudienceType;
+  audienceValue: string;
   title: string;
   description?: string;
-  status: TaskStatus;
   dueDate?: Date;
+  createdBy: ObjectId;
+  createdAt: Date;
+}
+
+export interface TaskCompletion {
+  _id?: ObjectId;
+  tenantId: ObjectId;
+  taskId: ObjectId;
+  userId: ObjectId;
+  status: TaskStatus;
+  note?: string;
+  updatedAt: Date;
 }
 
 export interface ActivityLog {

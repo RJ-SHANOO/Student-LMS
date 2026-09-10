@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -14,7 +15,7 @@ import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
 import { cardShadow, type Theme } from "../theme/colors";
 import { IconChevronLeft, IconTasks } from "../theme/icons";
-import { getMyTasks, updateTaskStatus, type Task } from "../lib/api";
+import { getMyTasks, updateTaskCompletion, type Task } from "../lib/api";
 import { useSession } from "../lib/session-context";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Tasks">;
@@ -31,6 +32,7 @@ export function TasksScreen({ navigation }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -53,10 +55,11 @@ export function TasksScreen({ navigation }: Props) {
 
   async function handleComplete(task: Task) {
     if (!session) return;
+    const note = notes[task._id]?.trim() || undefined;
     setUpdatingId(task._id);
     try {
-      await updateTaskStatus(session.token, task._id, "completed");
-      setTasks((prev) => prev.map((t) => (t._id === task._id ? { ...t, status: "completed" } : t)));
+      await updateTaskCompletion(session.token, task._id, { status: "completed", note });
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? { ...t, status: "completed", note } : t)));
     } finally {
       setUpdatingId(null);
     }
@@ -110,17 +113,32 @@ export function TasksScreen({ navigation }: Props) {
                     Due {new Date(item.dueDate).toLocaleDateString()}
                   </Text>
                 )}
+                {item.status === "completed" && item.note && (
+                  <Text style={[styles.description, { color: theme.textMuted }]}>Note: {item.note}</Text>
+                )}
                 {item.status !== "completed" && (
-                  <TouchableOpacity
-          activeOpacity={0.8}
-                    style={[styles.completeButton, { backgroundColor: theme.primary }]}
-                    onPress={() => handleComplete(item)}
-                    disabled={updatingId === item._id}
-                  >
-                    <Text style={styles.completeButtonText}>
-                      {updatingId === item._id ? "Saving..." : "Mark Complete"}
-                    </Text>
-                  </TouchableOpacity>
+                  <>
+                    <TextInput
+                      value={notes[item._id] ?? ""}
+                      onChangeText={(text) => setNotes((prev) => ({ ...prev, [item._id]: text }))}
+                      placeholder="Add a note (optional)"
+                      placeholderTextColor={theme.textMuted}
+                      style={[
+                        styles.noteInput,
+                        { borderColor: theme.border, color: theme.text, backgroundColor: theme.surfaceAlt },
+                      ]}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={[styles.completeButton, { backgroundColor: theme.primary }]}
+                      onPress={() => handleComplete(item)}
+                      disabled={updatingId === item._id}
+                    >
+                      <Text style={styles.completeButtonText}>
+                        {updatingId === item._id ? "Saving..." : "Mark Complete"}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             );
@@ -209,8 +227,16 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
   },
+  noteInput: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
+  },
   completeButton: {
-    marginTop: 14,
+    marginTop: 10,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: "center",

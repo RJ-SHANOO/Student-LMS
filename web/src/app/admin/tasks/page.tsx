@@ -5,22 +5,16 @@ import { listTasks } from "@/lib/services/tasks";
 import { ModuleIcon } from "@/components/module-icon";
 import { IconTasks } from "@/components/icons";
 
-const statusStyle: Record<string, string> = {
-  pending: "bg-gray-100 text-foreground dark:bg-white/10",
-  "in-progress": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  completed: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-};
-
 export default async function TasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ audienceType?: string }>;
 }) {
   const session = await getSession();
-  const { status } = await searchParams;
+  const { audienceType } = await searchParams;
 
   const tasks = await listTasks(new ObjectId(session!.tenantId!), {
-    status: status === "pending" || status === "in-progress" || status === "completed" ? status : undefined,
+    audienceType: audienceType === "course" || audienceType === "department" ? audienceType : undefined,
   });
 
   return (
@@ -40,14 +34,13 @@ export default async function TasksPage({
 
       <form className="mt-4 flex gap-2" method="get">
         <select
-          name="status"
-          defaultValue={status ?? ""}
+          name="audienceType"
+          defaultValue={audienceType ?? ""}
           className="rounded-md border border-border px-3 py-1.5 text-sm"
         >
-          <option value="">All statuses</option>
-          <option value="pending">Pending</option>
-          <option value="in-progress">In Progress</option>
-          <option value="completed">Completed</option>
+          <option value="">All tasks</option>
+          <option value="course">Course tasks</option>
+          <option value="department">Department tasks</option>
         </select>
         <button type="submit" className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5">
           Filter
@@ -59,9 +52,9 @@ export default async function TasksPage({
           <thead className="bg-background text-left text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-4 py-2">Title</th>
-              <th className="px-4 py-2">Assigned To</th>
+              <th className="px-4 py-2">Audience</th>
               <th className="px-4 py-2">Due Date</th>
-              <th className="px-4 py-2">Status</th>
+              <th className="px-4 py-2">Progress</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -73,15 +66,14 @@ export default async function TasksPage({
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">
-                  {task.assignee.name}
-                  <span className="ml-1 text-xs text-muted-foreground">({task.assignee.role})</span>
+                  {task.audienceType === "course" ? "Course" : "Department"}: {task.audienceValue}
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">
                   {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "—"}
                 </td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${statusStyle[task.status]}`}>
-                    {task.status}
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-foreground dark:bg-white/10">
+                    {task.completedCount}/{task.audienceCount} completed
                   </span>
                 </td>
               </tr>

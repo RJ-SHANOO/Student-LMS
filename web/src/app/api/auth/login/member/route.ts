@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         role: user.role,
         uniqueId: user.uniqueId,
+        coursesTaught: user.coursesTaught,
       },
     });
   } catch (error) {

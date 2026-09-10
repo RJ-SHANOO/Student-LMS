@@ -6,6 +6,8 @@ export interface Session {
   name: string;
   role: "employee" | "student";
   uniqueId?: string;
+  // Employees only — course codes they teach, and so can assign tasks to.
+  coursesTaught?: string[];
 }
 
 interface SessionContextValue {

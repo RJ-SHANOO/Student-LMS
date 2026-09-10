@@ -7,7 +7,7 @@ import { createTask, listTasks } from "@/lib/services/tasks";
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireRole(request, ["admin"]);
+    const auth = requireRole(request, ["admin", "employee"]);
     const body = await request.json().catch(() => null);
     const parsed = createTaskSchema.safeParse(body);
 
@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: z.treeifyError(parsed.error) }, { status: 400 });
     }
 
-    const { id } = await createTask(new ObjectId(auth.tenantId!), parsed.data, new ObjectId(auth.userId));
+    const { id } = await createTask(
+      { userId: auth.userId, tenantId: auth.tenantId!, role: auth.role },
+      parsed.data
+    );
     return NextResponse.json({ id: id.toString() }, { status: 201 });
   } catch (error) {
     return toErrorResponse(error);
@@ -26,8 +29,7 @@ export async function GET(request: NextRequest) {
   try {
     const auth = requireRole(request, ["admin"]);
     const parsed = listTasksQuerySchema.safeParse({
-      assignedTo: request.nextUrl.searchParams.get("assignedTo") ?? undefined,
-      status: request.nextUrl.searchParams.get("status") ?? undefined,
+      audienceType: request.nextUrl.searchParams.get("audienceType") ?? undefined,
     });
 
     if (!parsed.success) {

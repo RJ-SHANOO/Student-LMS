@@ -4,7 +4,7 @@ import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
 import { useThemeContext } from "../theme/ThemeContext";
 import { cardShadow } from "../theme/colors";
-import { IconLogOut, IconQrScan, IconTasks, IconUser } from "../theme/icons";
+import { IconClipboardList, IconLogOut, IconQrScan, IconTasks, IconUser } from "../theme/icons";
 import { clearSession } from "../lib/auth-storage";
 import { useSession } from "../lib/session-context";
 
@@ -14,6 +14,7 @@ export function AttendanceHomeScreen({ navigation }: Props) {
   const theme = useTheme();
   const { setPreference } = useThemeContext();
   const { session, setSession } = useSession();
+  const canAssignTasks = session?.role === "employee" && (session.coursesTaught?.length ?? 0) > 0;
 
   async function handleLogout() {
     await clearSession();
@@ -88,6 +89,31 @@ export function AttendanceHomeScreen({ navigation }: Props) {
             </Text>
           </View>
         </Pressable>
+
+        {canAssignTasks && (
+          <Pressable
+            style={({ pressed }) => [
+              styles.secondaryCard,
+              cardShadow,
+              {
+                backgroundColor: theme.surface,
+                borderColor: theme.border,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+              },
+            ]}
+            onPress={() => navigation.navigate("AssignTask")}
+          >
+            <View style={[styles.secondaryCardIcon, { backgroundColor: theme.accentSoft }]}>
+              <IconClipboardList size={22} color={theme.primary} />
+            </View>
+            <View style={styles.primaryCardText}>
+              <Text style={[styles.secondaryCardTitle, { color: theme.text }]}>Assign Task</Text>
+              <Text style={[styles.secondaryCardSubtitle, { color: theme.textMuted }]}>
+                Give your students something to complete
+              </Text>
+            </View>
+          </Pressable>
+        )}
       </View>
 
       <Text style={[styles.footer, { color: theme.textMuted }]}>SOIL — The Innovators</Text>

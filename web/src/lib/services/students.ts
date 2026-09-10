@@ -72,6 +72,12 @@ export async function listStudents(
   return users.find(query).sort({ createdAt: -1 }).toArray();
 }
 
+export async function listDistinctCourses(tenantId: ObjectId) {
+  const users = await usersCollection();
+  const courses = await users.distinct("course", { tenantId, role: "student" });
+  return courses.filter((c): c is string => Boolean(c)).sort();
+}
+
 export async function getStudent(tenantId: ObjectId, id: string) {
   if (!ObjectId.isValid(id)) {
     throw new AuthError("Student not found", 404);

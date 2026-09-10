@@ -7,6 +7,7 @@ import { AttendanceHomeScreen } from "../screens/AttendanceHomeScreen";
 import { ScanScreen } from "../screens/ScanScreen";
 import { SelfieScreen } from "../screens/SelfieScreen";
 import { TasksScreen } from "../screens/TasksScreen";
+import { AssignTaskScreen } from "../screens/AssignTaskScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -20,6 +21,7 @@ export function RootNavigator() {
         <Stack.Screen name="Scan" component={ScanScreen} />
         <Stack.Screen name="Selfie" component={SelfieScreen} />
         <Stack.Screen name="Tasks" component={TasksScreen} />
+        <Stack.Screen name="AssignTask" component={AssignTaskScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

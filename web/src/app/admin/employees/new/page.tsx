@@ -22,6 +22,22 @@ export default function NewEmployeePage() {
         <Field label="Date of Birth" name="dob" type="date" required />
         <Field label="Department" name="department" required placeholder="Administration" />
         <Field label="Designation" name="designation" required placeholder="Instructor" />
+        <div>
+          <label htmlFor="coursesTaught" className="block text-sm font-medium text-foreground">
+            Courses Taught (optional)
+          </label>
+          <input
+            id="coursesTaught"
+            name="coursesTaught"
+            type="text"
+            placeholder="WD, GD"
+            className="mt-1 block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Comma-separated course codes (matching students&apos; course field). Only instructors with a course
+            listed here can assign tasks to that course.
+          </p>
+        </div>
 
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 

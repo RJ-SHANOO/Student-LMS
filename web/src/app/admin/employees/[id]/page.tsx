@@ -50,6 +50,12 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           <dd className="text-foreground">{employee.department}</dd>
           <dt className="text-muted-foreground">Designation</dt>
           <dd className="text-foreground">{employee.designation}</dd>
+          <dt className="text-muted-foreground">Courses Taught</dt>
+          <dd className="text-foreground">
+            {employee.coursesTaught && employee.coursesTaught.length > 0
+              ? employee.coursesTaught.join(", ")
+              : "—"}
+          </dd>
         </dl>
 
         <form

@@ -25,6 +25,7 @@ export async function createEmployee(tenantId: ObjectId, input: CreateEmployeeIn
     role: "employee",
     department: input.department,
     designation: input.designation,
+    coursesTaught: input.coursesTaught,
     status: "active",
     createdAt: new Date(),
   });
@@ -58,6 +59,12 @@ export async function listEmployees(
   }
 
   return users.find(query).sort({ createdAt: -1 }).toArray();
+}
+
+export async function listDistinctDepartments(tenantId: ObjectId) {
+  const users = await usersCollection();
+  const departments = await users.distinct("department", { tenantId, role: "employee" });
+  return departments.filter((d): d is string => Boolean(d)).sort();
 }
 
 export async function getEmployee(tenantId: ObjectId, id: string) {

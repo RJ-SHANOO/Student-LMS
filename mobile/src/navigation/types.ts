@@ -5,4 +5,5 @@ export type RootStackParamList = {
   Scan: undefined;
   Selfie: { qrToken: string; latitude: number; longitude: number };
   Tasks: undefined;
+  AssignTask: undefined;
 };
