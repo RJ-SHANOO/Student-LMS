@@ -3,7 +3,8 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
 import { useThemeContext } from "../theme/ThemeContext";
-import { brand } from "../theme/colors";
+import { cardShadow } from "../theme/colors";
+import { IconLogOut, IconQrScan, IconTasks, IconUser } from "../theme/icons";
 import { clearSession } from "../lib/auth-storage";
 import { useSession } from "../lib/session-context";
 
@@ -25,32 +26,60 @@ export function AttendanceHomeScreen({ navigation }: Props) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View>
-        <Text style={[styles.greeting, { color: theme.text }]}>Hi, {session?.name}</Text>
-        {session?.uniqueId && (
-          <Text style={[styles.uniqueId, { color: theme.textMuted }]}>{session.uniqueId}</Text>
-        )}
+      <View style={styles.header}>
+        <View style={styles.identity}>
+          <View style={[styles.avatar, { backgroundColor: theme.accentSoft }]}>
+            <IconUser size={22} color={theme.primary} />
+          </View>
+          <View>
+            <Text style={[styles.greeting, { color: theme.text }]}>Hi, {session?.name}</Text>
+            {session?.uniqueId && (
+              <Text style={[styles.uniqueId, { color: theme.textMuted }]}>{session.uniqueId}</Text>
+            )}
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={handleLogout}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={[styles.logoutButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        >
+          <IconLogOut size={18} color={theme.textMuted} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[styles.scanButton, { backgroundColor: brand.primaryBlue }]}
+          activeOpacity={0.85}
+          style={[styles.primaryCard, cardShadow, { backgroundColor: theme.primary }]}
           onPress={() => navigation.navigate("Scan")}
         >
-          <Text style={styles.scanButtonText}>Mark Attendance</Text>
+          <View style={styles.primaryCardIcon}>
+            <IconQrScan size={28} color="#fff" />
+          </View>
+          <View style={styles.primaryCardText}>
+            <Text style={styles.primaryCardTitle}>Mark Attendance</Text>
+            <Text style={styles.primaryCardSubtitle}>Scan the QR code at reception</Text>
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tasksButton, { borderColor: brand.primaryBlue }]}
+          activeOpacity={0.85}
+          style={[styles.secondaryCard, cardShadow, { backgroundColor: theme.surface, borderColor: theme.border }]}
           onPress={() => navigation.navigate("Tasks")}
         >
-          <Text style={[styles.tasksButtonText, { color: brand.primaryBlue }]}>My Tasks</Text>
+          <View style={[styles.secondaryCardIcon, { backgroundColor: theme.accentSoft }]}>
+            <IconTasks size={22} color={theme.primary} />
+          </View>
+          <View style={styles.primaryCardText}>
+            <Text style={[styles.secondaryCardTitle, { color: theme.text }]}>My Tasks</Text>
+            <Text style={[styles.secondaryCardSubtitle, { color: theme.textMuted }]}>
+              View and complete what's assigned to you
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity onPress={handleLogout}>
-        <Text style={[styles.logout, { color: theme.textMuted }]}>Log out</Text>
-      </TouchableOpacity>
+      <Text style={[styles.footer, { color: theme.textMuted }]}>SOIL — The Innovators</Text>
     </View>
   );
 }
@@ -58,43 +87,104 @@ export function AttendanceHomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: 24,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 48,
   },
-  greeting: {
-    fontSize: 22,
-    fontWeight: "600",
-  },
-  uniqueId: {
-    marginTop: 4,
-    fontSize: 13,
-  },
-  actions: {
+  identity: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
-  scanButton: {
-    borderRadius: 12,
-    paddingVertical: 20,
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
+    justifyContent: "center",
   },
-  scanButtonText: {
-    color: "#fff",
+  greeting: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
   },
-  tasksButton: {
+  uniqueId: {
+    marginTop: 2,
+    fontSize: 12,
+    fontFamily: "monospace",
+  },
+  logoutButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 16,
     alignItems: "center",
+    justifyContent: "center",
   },
-  tasksButtonText: {
+  actions: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 14,
+  },
+  primaryCard: {
+    borderRadius: 16,
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  primaryCardIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryCardText: {
+    flex: 1,
+  },
+  primaryCardTitle: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  primaryCardSubtitle: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  secondaryCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  secondaryCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryCardTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
-  logout: {
+  secondaryCardSubtitle: {
+    fontSize: 12.5,
+    marginTop: 2,
+  },
+  footer: {
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
 });

@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
-import { brand } from "../theme/colors";
+import { IconAlertCircle, IconCamera, IconCheckCircle } from "../theme/icons";
 import { markAttendance } from "../lib/api";
 import { useSession } from "../lib/session-context";
 
@@ -60,27 +60,37 @@ export function SelfieScreen({ route, navigation }: Props) {
   if (!permission.granted) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <View style={[styles.iconBadge, { backgroundColor: theme.accentSoft }]}>
+          <IconCamera size={30} color={theme.primary} />
+        </View>
         <Text style={[styles.message, { color: theme.text }]}>
           Camera access is needed to capture your check-in selfie.
         </Text>
-        <Text style={[styles.link, { color: theme.primary }]} onPress={requestPermission}>
-          Grant Camera Permission
-        </Text>
+        <TouchableOpacity
+          style={[styles.doneButton, { backgroundColor: theme.primary }]}
+          onPress={requestPermission}
+        >
+          <Text style={styles.doneButtonText}>Grant Camera Permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   if (stage === "success") {
+    const isLate = result?.status === "late";
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <Text style={[styles.successTitle, { color: brand.primaryBlue }]}>
-          {result?.status === "late" ? "Checked in (Late)" : "Checked in!"}
+        <View style={[styles.iconBadge, { backgroundColor: isLate ? theme.dangerSoft : theme.successSoft }]}>
+          <IconCheckCircle size={34} color={isLate ? theme.danger : theme.success} />
+        </View>
+        <Text style={[styles.successTitle, { color: theme.text }]}>
+          {isLate ? "Checked in (Late)" : "Checked in!"}
         </Text>
-        <Text style={[styles.message, { color: theme.textMuted }]}>
+        <Text style={[styles.message, { color: theme.textMuted, marginBottom: 0 }]}>
           {result?.checkInTime ? new Date(result.checkInTime).toLocaleTimeString() : ""}
         </Text>
         <TouchableOpacity
-          style={[styles.doneButton, { backgroundColor: brand.primaryBlue }]}
+          style={[styles.doneButton, { backgroundColor: theme.primary }]}
           onPress={() => navigation.replace("Attendance")}
         >
           <Text style={styles.doneButtonText}>Done</Text>
@@ -92,9 +102,12 @@ export function SelfieScreen({ route, navigation }: Props) {
   if (stage === "error") {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <Text style={[styles.message, { color: "#DC2626" }]}>{error}</Text>
+        <View style={[styles.iconBadge, { backgroundColor: theme.dangerSoft }]}>
+          <IconAlertCircle size={30} color={theme.danger} />
+        </View>
+        <Text style={[styles.message, { color: theme.text }]}>{error}</Text>
         <TouchableOpacity
-          style={[styles.doneButton, { backgroundColor: brand.primaryBlue }]}
+          style={[styles.doneButton, { backgroundColor: theme.primary }]}
           onPress={() => navigation.replace("Attendance")}
         >
           <Text style={styles.doneButtonText}>Back to Home</Text>
@@ -106,6 +119,7 @@ export function SelfieScreen({ route, navigation }: Props) {
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="front" onCameraReady={handleCameraReady} />
+      <View style={styles.faceGuide} pointerEvents="none" />
       <View style={styles.overlay}>
         <ActivityIndicator color="#fff" />
         <Text style={styles.overlayText}>
@@ -119,25 +133,42 @@ export function SelfieScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#000",
   },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
+  },
+  iconBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
   message: {
     fontSize: 15,
     textAlign: "center",
     marginBottom: 16,
+    lineHeight: 21,
   },
-  link: {
-    fontSize: 15,
-    fontWeight: "600",
+  faceGuide: {
+    position: "absolute",
+    top: "28%",
+    left: "22%",
+    right: "22%",
+    aspectRatio: 1,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.5)",
+    borderStyle: "dashed",
   },
   overlay: {
     position: "absolute",
-    bottom: 48,
+    bottom: 56,
     left: 0,
     right: 0,
     alignItems: "center",
@@ -148,13 +179,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   successTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   doneButton: {
     marginTop: 24,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 32,
   },

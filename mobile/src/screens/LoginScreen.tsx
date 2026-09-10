@@ -4,6 +4,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,7 +15,8 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../theme/useTheme";
 import { useThemeContext } from "../theme/ThemeContext";
-import { brand } from "../theme/colors";
+import { cardShadow } from "../theme/colors";
+import { IconAlertCircle } from "../theme/icons";
 import { getThemePreference, loginMember } from "../lib/api";
 import { saveSession } from "../lib/auth-storage";
 import { useSession } from "../lib/session-context";
@@ -61,47 +63,58 @@ export function LoginScreen({ navigation }: Props) {
       style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Image
-        source={require("../../assets/branding/logo.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={[styles.subtitle, { color: theme.textMuted }]}>Employee / Student Login</Text>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <Image source={require("../../assets/branding/logo.png")} style={styles.logo} resizeMode="contain" />
+        <Text style={[styles.subtitle, { color: theme.textMuted }]}>Employee / Student Login</Text>
 
-      <View style={styles.field}>
-        <Text style={[styles.label, { color: theme.text }]}>CNIC (13 digits)</Text>
-        <TextInput
-          value={cnic}
-          onChangeText={setCnic}
-          keyboardType="number-pad"
-          placeholder="3520212345671"
-          placeholderTextColor={theme.textMuted}
-          maxLength={15}
-          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
-        />
-      </View>
+        <View style={[styles.card, cardShadow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View style={styles.field}>
+            <Text style={[styles.label, { color: theme.text }]}>CNIC (13 digits)</Text>
+            <TextInput
+              value={cnic}
+              onChangeText={setCnic}
+              keyboardType="number-pad"
+              placeholder="3520212345671"
+              placeholderTextColor={theme.textMuted}
+              maxLength={15}
+              style={[
+                styles.input,
+                { borderColor: theme.border, color: theme.text, backgroundColor: theme.surfaceAlt },
+              ]}
+            />
+          </View>
 
-      <View style={styles.field}>
-        <Text style={[styles.label, { color: theme.text }]}>Date of Birth (YYYY-MM-DD)</Text>
-        <TextInput
-          value={dob}
-          onChangeText={setDob}
-          placeholder="2000-01-01"
-          placeholderTextColor={theme.textMuted}
-          maxLength={10}
-          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
-        />
-      </View>
+          <View style={styles.field}>
+            <Text style={[styles.label, { color: theme.text }]}>Date of Birth (YYYY-MM-DD)</Text>
+            <TextInput
+              value={dob}
+              onChangeText={setDob}
+              placeholder="2000-01-01"
+              placeholderTextColor={theme.textMuted}
+              maxLength={10}
+              style={[
+                styles.input,
+                { borderColor: theme.border, color: theme.text, backgroundColor: theme.surfaceAlt },
+              ]}
+            />
+          </View>
 
-      {error && <Text style={styles.error}>{error}</Text>}
+          {error && (
+            <View style={[styles.errorBox, { backgroundColor: theme.dangerSoft }]}>
+              <IconAlertCircle size={16} color={theme.danger} />
+              <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text>
+            </View>
+          )}
 
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: brand.primaryBlue, opacity: loading ? 0.6 : 1 }]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.primary, opacity: loading ? 0.6 : 1 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -109,19 +122,28 @@ export function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scroll: {
+    flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingVertical: 32,
   },
   logo: {
-    width: 96,
-    height: 96,
+    width: 88,
+    height: 88,
     alignSelf: "center",
   },
   subtitle: {
     fontSize: 14,
     textAlign: "center",
     marginTop: 4,
-    marginBottom: 32,
+    marginBottom: 24,
+  },
+  card: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 20,
   },
   field: {
     marginBottom: 16,
@@ -133,22 +155,29 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 11,
     fontSize: 16,
   },
-  error: {
-    color: "#DC2626",
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  errorText: {
     fontSize: 13,
-    marginBottom: 12,
-    textAlign: "center",
+    flex: 1,
   },
   button: {
-    borderRadius: 8,
+    borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
   },
   buttonText: {
     color: "#fff",
