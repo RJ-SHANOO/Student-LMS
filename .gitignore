@@ -40,6 +40,9 @@ yarn-error.log*
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 
+# Local project instructions for Claude — kept out of the repo
+CLAUDE.md
+
 # OS files
 .DS_Store
 Thumbs.db
