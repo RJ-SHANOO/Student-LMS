@@ -1,4 +1,5 @@
 import { listTenantsWithStats, getPlatformStats } from "@/lib/services/super-admin";
+import { IconActivity, IconBuilding, IconEmployees } from "@/components/icons";
 import { toggleTenantStatusAction } from "./actions";
 
 export default async function SuperAdminTenantsPage() {
@@ -7,11 +8,12 @@ export default async function SuperAdminTenantsPage() {
   return (
     <div>
       <h1 className="text-lg font-semibold text-foreground">Tenants</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Every institute registered on the platform.</p>
 
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        <StatCard label="Total Institutes" value={stats.tenantCount} />
-        <StatCard label="Active Institutes" value={stats.activeTenantCount} />
-        <StatCard label="Total Users" value={stats.totalUsers} />
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Total Institutes" value={stats.tenantCount} icon={IconBuilding} />
+        <StatCard label="Active Institutes" value={stats.activeTenantCount} icon={IconActivity} />
+        <StatCard label="Total Users" value={stats.totalUsers} icon={IconEmployees} />
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
@@ -79,11 +81,24 @@ export default async function SuperAdminTenantsPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  label,
+  value,
+  icon: StatIcon,
+}: {
+  label: string;
+  value: number;
+  icon: (props: { className?: string }) => React.ReactElement;
+}) {
   return (
-    <div className="rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-4">
-      <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-foreground">{value}</p>
+    <div className="rounded-lg border border-border bg-surface p-4 shadow-[var(--shadow-card)]">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+        <span className="rounded-md bg-accent-soft p-1.5 text-primary">
+          <StatIcon className="h-4 w-4" />
+        </span>
+      </div>
+      <p className="mt-2 text-2xl font-semibold text-foreground">{value}</p>
     </div>
   );
 }

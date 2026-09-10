@@ -22,7 +22,7 @@ export default async function AttendancePage({
         <h1 className="text-lg font-semibold text-foreground">All Attendance</h1>
         <Link
           href="/admin/attendance/display"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
         >
           Show Check-in QR
         </Link>

@@ -27,7 +27,7 @@ export default async function TasksPage({
         <h1 className="text-lg font-semibold text-foreground">Tasks</h1>
         <Link
           href="/admin/tasks/new"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
         >
           Assign Task
         </Link>
