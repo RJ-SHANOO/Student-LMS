@@ -56,6 +56,23 @@ interface MarkAttendanceResult {
   status: "present" | "late";
 }
 
+export interface MyAttendanceRecord {
+  _id: string;
+  date: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status: "present" | "late" | "absent";
+}
+
+// Most-recent-first. The caller checks whether the first record's `date`
+// matches today to know if attendance has already been marked.
+export async function getMyAttendance(token: string): Promise<MyAttendanceRecord[]> {
+  const { attendance } = await apiFetch("/api/attendance/mine", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return attendance;
+}
+
 export function markAttendance(token: string, input: MarkAttendanceInput): Promise<MarkAttendanceResult> {
   return apiFetch("/api/attendance/mark", {
     method: "POST",

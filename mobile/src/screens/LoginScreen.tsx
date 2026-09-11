@@ -25,7 +25,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export function LoginScreen({ navigation }: Props) {
   const theme = useTheme();
-  const { setPreference } = useThemeContext();
+  const { applyTenantDefault } = useThemeContext();
   const { setSession } = useSession();
   const [cnic, setCnic] = useState("");
   const [dob, setDob] = useState("");
@@ -49,7 +49,7 @@ export function LoginScreen({ navigation }: Props) {
       setSession(session);
       // Best-effort: don't block the login transition on this round trip.
       getThemePreference(session.token)
-        .then(({ themePreference }) => setPreference(themePreference))
+        .then(({ themePreference }) => applyTenantDefault(themePreference))
         .catch(() => {});
       navigation.replace("Attendance");
     } catch (e) {

@@ -6,11 +6,23 @@ import { darkTheme, lightTheme, type Theme } from "./colors";
 export type ThemePreference = "light" | "dark" | "system";
 
 const STORAGE_KEY = "soil_theme_preference";
+// Set the moment a user picks a theme themselves in Settings. Once set, the
+// tenant-wide default fetched at login/splash must never silently overwrite
+// their personal choice again.
+const OVERRIDE_KEY = "soil_theme_user_override";
 
 interface ThemeContextValue {
   preference: ThemePreference;
   theme: Theme;
+  hasUserOverride: boolean;
+  // User-initiated: from the Settings screen. Persists and locks out the
+  // tenant default from here on.
   setPreference: (preference: ThemePreference) => void;
+  // System-initiated: from Splash/Login syncing the tenant's configured
+  // default. No-ops once the user has set their own preference, and clears
+  // on logout so the next tenant/account starts fresh.
+  applyTenantDefault: (preference: ThemePreference) => void;
+  clearOverrideOnLogout: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -18,29 +30,52 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const scheme = useColorScheme();
   const [preference, setPreferenceState] = useState<ThemePreference>("system");
+  const [hasUserOverride, setHasUserOverride] = useState(false);
 
-  // Applies the last-known tenant preference (cached at login/splash) before
-  // any network round trip completes, so returning users don't see a flash
-  // of the wrong theme while Splash's session check is in flight.
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((stored) => {
-        if (stored === "light" || stored === "dark" || stored === "system") {
-          setPreferenceState(stored);
+    Promise.all([AsyncStorage.getItem(STORAGE_KEY), AsyncStorage.getItem(OVERRIDE_KEY)])
+      .then(([storedPref, storedOverride]) => {
+        if (storedPref === "light" || storedPref === "dark" || storedPref === "system") {
+          setPreferenceState(storedPref);
         }
+        setHasUserOverride(storedOverride === "true");
       })
       .catch(() => {});
   }, []);
 
   function setPreference(next: ThemePreference) {
     setPreferenceState(next);
+    setHasUserOverride(true);
     AsyncStorage.setItem(STORAGE_KEY, next).catch(() => {});
+    AsyncStorage.setItem(OVERRIDE_KEY, "true").catch(() => {});
+  }
+
+  function applyTenantDefault(next: ThemePreference) {
+    setHasUserOverride((current) => {
+      if (current) return current;
+      setPreferenceState(next);
+      AsyncStorage.setItem(STORAGE_KEY, next).catch(() => {});
+      return current;
+    });
+  }
+
+  function clearOverrideOnLogout() {
+    setHasUserOverride(false);
+    setPreferenceState("system");
+    AsyncStorage.removeItem(OVERRIDE_KEY).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEY, "system").catch(() => {});
   }
 
   const resolved = preference === "system" ? scheme : preference;
   const theme = resolved === "dark" ? darkTheme : lightTheme;
 
-  return <ThemeContext.Provider value={{ preference, theme, setPreference }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider
+      value={{ preference, theme, hasUserOverride, setPreference, applyTenantDefault, clearOverrideOnLogout }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useThemeContext() {

@@ -92,6 +92,18 @@ export async function markAttendance(
   return { date, checkInTime: now, status };
 }
 
+// Self-service: an employee/student's own check-in history, most recent
+// first. Powers both the mobile home screen's "already checked in today"
+// state and a full history view.
+export async function listMyAttendance(tenantId: ObjectId, userId: ObjectId) {
+  const attendance = await attendanceCollection();
+  return attendance
+    .find({ tenantId, userId })
+    .sort({ date: -1 })
+    .project({ date: 1, checkInTime: 1, checkOutTime: 1, status: 1 })
+    .toArray();
+}
+
 export async function listAttendance(tenantId: ObjectId, filters: ListAttendanceQuery = {}) {
   const attendance = await attendanceCollection();
 

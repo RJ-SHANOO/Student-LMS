@@ -10,6 +10,8 @@ import { TasksScreen } from "../screens/TasksScreen";
 import { InstructorTasksScreen } from "../screens/InstructorTasksScreen";
 import { AssignTaskScreen } from "../screens/AssignTaskScreen";
 import { TaskRosterScreen } from "../screens/TaskRosterScreen";
+import { SettingsScreen } from "../screens/SettingsScreen";
+import { AttendanceHistoryScreen } from "../screens/AttendanceHistoryScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,6 +28,8 @@ export function RootNavigator() {
         <Stack.Screen name="InstructorTasks" component={InstructorTasksScreen} />
         <Stack.Screen name="AssignTask" component={AssignTaskScreen} />
         <Stack.Screen name="TaskRoster" component={TaskRosterScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="AttendanceHistory" component={AttendanceHistoryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

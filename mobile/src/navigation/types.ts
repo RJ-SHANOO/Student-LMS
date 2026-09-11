@@ -8,4 +8,6 @@ export type RootStackParamList = {
   InstructorTasks: undefined;
   AssignTask: undefined;
   TaskRoster: { taskId: string };
+  Settings: undefined;
+  AttendanceHistory: undefined;
 };

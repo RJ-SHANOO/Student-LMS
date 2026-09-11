@@ -15,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
 export function SplashScreen({ navigation }: Props) {
   const theme = useTheme();
-  const { setPreference } = useThemeContext();
+  const { applyTenantDefault } = useThemeContext();
   const { setSession } = useSession();
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
@@ -47,14 +47,14 @@ export function SplashScreen({ navigation }: Props) {
           // ThemeProvider's own AsyncStorage read) in case it changed
           // since the last login. Best-effort — don't block navigation.
           getThemePreference(session.token)
-            .then(({ themePreference }) => setPreference(themePreference))
+            .then(({ themePreference }) => applyTenantDefault(themePreference))
             .catch(() => {});
         } else {
           navigation.replace("Login");
         }
       }, remaining);
     });
-  }, [navigation, opacity, scale, setSession, setPreference]);
+  }, [navigation, opacity, scale, setSession, applyTenantDefault]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
