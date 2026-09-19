@@ -68,7 +68,7 @@ export async function markAttendance(
   }
 
   const lateAfter = settings.lateAfterTime ?? "09:15";
-  const status = minutesSinceMidnight(now) > parseHHMM(lateAfter) ? "late" : "present";
+  const status: "present" | "late" = minutesSinceMidnight(now) > parseHHMM(lateAfter) ? "late" : "present";
 
   await attendance.insertOne({
     tenantId: new ObjectId(auth.tenantId),

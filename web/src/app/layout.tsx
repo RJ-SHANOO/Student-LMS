@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeScript } from "@/components/theme-script";
+import { SplashScreen } from "@/components/splash-screen";
+import { RegisterServiceWorker } from "@/components/register-service-worker";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +21,17 @@ export const metadata: Metadata = {
   icons: {
     icon: "/branding/logo.png",
   },
+  appleWebApp: {
+    capable: true,
+    title: "SOIL",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#2e5fa3",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -30,6 +43,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ThemeScript forced="light" />
+        <RegisterServiceWorker />
+        <SplashScreen />
         {children}
       </body>
     </html>
