@@ -18,9 +18,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SOIL — The Innovators",
   description: "Multi-tenant institute management platform",
-  icons: {
-    icon: "/branding/logo.png",
-  },
   appleWebApp: {
     capable: true,
     title: "SOIL",
