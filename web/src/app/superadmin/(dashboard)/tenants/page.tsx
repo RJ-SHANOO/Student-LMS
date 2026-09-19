@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { listTenantsWithStats, getPlatformStats } from "@/lib/services/super-admin";
 import { IconActivity, IconBuilding, IconEmployees } from "@/components/icons";
 import { toggleTenantStatusAction } from "./actions";
@@ -7,8 +8,15 @@ export default async function SuperAdminTenantsPage() {
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-foreground">Tenants</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Every institute registered on the platform.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold text-foreground">Tenants</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Every institute registered on the platform.</p>
+        </div>
+        <Link href="/superadmin/tenants/new" className="rounded-md btn-gradient px-4 py-2 text-sm font-medium text-white">
+          Add Institute
+        </Link>
+      </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Total Institutes" value={stats.tenantCount} icon={IconBuilding} mod="students" />
@@ -32,7 +40,9 @@ export default async function SuperAdminTenantsPage() {
             {tenants.map((tenant) => (
               <tr key={tenant._id!.toString()}>
                 <td className="px-4 py-2 text-foreground">
-                  {tenant.name}
+                  <Link href={`/superadmin/tenants/${tenant._id}`} className="text-primary hover:underline">
+                    {tenant.name}
+                  </Link>
                   <span className="ml-1 font-mono text-xs text-muted-foreground">{tenant.code}</span>
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">

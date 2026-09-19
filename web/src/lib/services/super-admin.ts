@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { superAdminsCollection, tenantsCollection, usersCollection } from "@/lib/db/collections";
-import { AuthError, signJwt, verifyPassword } from "@/lib/auth";
+import { AuthError, hashPassword, signJwt, verifyPassword } from "@/lib/auth";
 import type { TenantStatus, ThemePreference } from "@/types/models";
 
 export async function authenticateSuperAdmin(email: string, password: string) {
@@ -49,6 +49,18 @@ export async function listTenantsWithStats() {
     .toArray();
 }
 
+export async function getTenantById(id: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new AuthError("Tenant not found", 404);
+  }
+  const tenants = await tenantsCollection();
+  const tenant = await tenants.findOne({ _id: new ObjectId(id) });
+  if (!tenant) {
+    throw new AuthError("Tenant not found", 404);
+  }
+  return tenant;
+}
+
 export async function setTenantStatus(id: string, status: TenantStatus) {
   if (!ObjectId.isValid(id)) {
     throw new AuthError("Tenant not found", 404);
@@ -88,6 +100,31 @@ export async function updateSuperAdminTheme(id: string, themePreference: ThemePr
     throw new AuthError("Not found", 404);
   }
   return updated;
+}
+
+export async function listSuperAdmins() {
+  const superAdmins = await superAdminsCollection();
+  return superAdmins.find({}, { projection: { passwordHash: 0 } }).sort({ createdAt: -1 }).toArray();
+}
+
+export async function createSuperAdmin(input: { name: string; email: string; password: string }) {
+  const superAdmins = await superAdminsCollection();
+
+  const existing = await superAdmins.findOne({ email: input.email });
+  if (existing) {
+    throw new AuthError("A super admin with this email already exists", 409);
+  }
+
+  const passwordHash = await hashPassword(input.password);
+  const now = new Date();
+  const result = await superAdmins.insertOne({
+    name: input.name,
+    email: input.email,
+    passwordHash,
+    createdAt: now,
+  });
+
+  return { _id: result.insertedId, name: input.name, email: input.email, createdAt: now };
 }
 
 export async function getPlatformStats() {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { loginAdminAction, type LoginState } from "./actions";
 
@@ -55,13 +54,6 @@ export default function LoginPage() {
             {pending ? "Signing in..." : "Sign in"}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          New institute?{" "}
-          <Link href="/register" className="font-medium text-primary hover:underline">
-            Register here
-          </Link>
-        </p>
       </div>
     </main>
   );

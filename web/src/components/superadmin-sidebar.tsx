@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
-import { IconBuilding, IconLogOut, IconSettings } from "./icons";
+import { IconBuilding, IconEmployees, IconLogOut, IconSettings } from "./icons";
 
 const NAV_ITEMS = [
   { href: "/superadmin/tenants", label: "Tenants", icon: IconBuilding },
+  { href: "/superadmin/admins", label: "Super Admins", icon: IconEmployees },
   { href: "/superadmin/settings", label: "Settings", icon: IconSettings },
 ];
 

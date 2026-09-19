@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { setTenantStatus } from "@/lib/services/super-admin";
-import { registerTenant } from "@/lib/services/auth";
-import { registerSchema } from "@/lib/validation/auth";
+import { createSuperAdmin } from "@/lib/services/super-admin";
+import { createSuperAdminSchema } from "@/lib/validation/super-admin";
 import { AuthError } from "@/lib/auth";
 
 async function requireSuperAdminSession() {
@@ -16,27 +15,20 @@ async function requireSuperAdminSession() {
   return session;
 }
 
-export async function toggleTenantStatusAction(id: string, nextStatus: "active" | "inactive") {
-  await requireSuperAdminSession();
-  await setTenantStatus(id, nextStatus);
-  revalidatePath("/superadmin/tenants");
-}
-
-export interface CreateTenantState {
+export interface CreateSuperAdminState {
   error?: string;
+  success?: boolean;
 }
 
-export async function createTenantAction(
-  _prevState: CreateTenantState,
+export async function createSuperAdminAction(
+  _prevState: CreateSuperAdminState,
   formData: FormData
-): Promise<CreateTenantState> {
+): Promise<CreateSuperAdminState> {
   await requireSuperAdminSession();
 
-  const parsed = registerSchema.safeParse({
-    instituteName: formData.get("instituteName"),
-    ownerName: formData.get("ownerName"),
+  const parsed = createSuperAdminSchema.safeParse({
+    name: formData.get("name"),
     email: formData.get("email"),
-    phone: formData.get("phone"),
     password: formData.get("password"),
   });
 
@@ -45,7 +37,7 @@ export async function createTenantAction(
   }
 
   try {
-    await registerTenant(parsed.data);
+    await createSuperAdmin(parsed.data);
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: error.message };
@@ -54,6 +46,6 @@ export async function createTenantAction(
     return { error: "Something went wrong. Please try again." };
   }
 
-  revalidatePath("/superadmin/tenants");
-  redirect("/superadmin/tenants");
+  revalidatePath("/superadmin/admins");
+  return { success: true };
 }

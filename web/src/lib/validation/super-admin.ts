@@ -12,3 +12,9 @@ export const setTenantStatusSchema = z.object({
 export const updateSuperAdminSettingsSchema = z.object({
   themePreference: z.enum(["light", "dark", "system"]),
 });
+
+export const createSuperAdminSchema = z.object({
+  name: z.string().trim().min(2, "Name is too short"),
+  email: z.email("Invalid email address").toLowerCase(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
