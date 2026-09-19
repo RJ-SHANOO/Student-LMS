@@ -16,14 +16,21 @@ export function SplashScreen() {
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY)) return;
-    sessionStorage.setItem(SESSION_KEY, "1");
 
     // One-time client-only reveal gated by sessionStorage, not state derived
     // from props/other state — the synchronous setState here is intentional.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(true);
     const fadeTimer = setTimeout(() => setFadingOut(true), VISIBLE_MS - FADE_MS);
-    const hideTimer = setTimeout(() => setVisible(false), VISIBLE_MS);
+    // Mark as shown only once the animation actually completes, not up front —
+    // in dev, StrictMode runs this effect (and its cleanup) twice, and marking
+    // the session up front would make the second run skip re-scheduling these
+    // timers, leaving the splash stuck visible forever with nothing left to
+    // dismiss it.
+    const hideTimer = setTimeout(() => {
+      setVisible(false);
+      sessionStorage.setItem(SESSION_KEY, "1");
+    }, VISIBLE_MS);
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(hideTimer);

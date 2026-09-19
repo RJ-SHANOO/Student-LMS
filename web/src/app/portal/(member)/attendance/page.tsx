@@ -25,6 +25,16 @@ export default function AttendanceCheckInPage() {
   const rafRef = useRef<number | null>(null);
   const qrTokenRef = useRef<string | null>(null);
   const coordsRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const unmountedRef = useRef(false);
+  useEffect(() => {
+    // Reset on (re)mount, not just set on cleanup — dev-mode StrictMode
+    // double-invokes this effect once immediately, and without the reset
+    // that stray cleanup would permanently mark the component as unmounted.
+    unmountedRef.current = false;
+    return () => {
+      unmountedRef.current = true;
+    };
+  }, []);
 
   const fail = useCallback((message: string) => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -146,13 +156,18 @@ export default function AttendanceCheckInPage() {
           }
 
           setStep("submitting");
+          // Not gated on this effect's own `cancelled` — setting step to
+          // "submitting" changes this effect's dependency and triggers its
+          // own cleanup immediately, which would otherwise mark the request
+          // as stale before the response ever arrives and leave the UI
+          // stuck. Only a real unmount should discard the result.
           markAttendanceAction({
             qrToken: qrTokenRef.current,
             latitude: coordsRef.current.latitude,
             longitude: coordsRef.current.longitude,
             photo,
           }).then((result) => {
-            if (cancelled) return;
+            if (unmountedRef.current) return;
             if (result.ok) {
               setResultStatus(result.status ?? "present");
               setStep("success");
