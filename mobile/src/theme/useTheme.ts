@@ -1,5 +1,0 @@
-import { useThemeContext } from "./ThemeContext";
-
-export function useTheme() {
-  return useThemeContext().theme;
-}
