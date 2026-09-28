@@ -18,7 +18,7 @@ export async function updateSettingsAction(
 ): Promise<SettingsState> {
   const session = await getSession();
   if (!session || session.role !== "admin" || !session.tenantId) {
-    redirect("/login");
+    redirect("/login?role=institute");
   }
 
   const parsed = updateSettingsSchema.safeParse({

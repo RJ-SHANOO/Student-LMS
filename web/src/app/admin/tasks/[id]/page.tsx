@@ -2,28 +2,31 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
-import { getTask } from "@/lib/services/tasks";
+import { getTaskForInstitute } from "@/lib/services/tasks";
+import { getCourse } from "@/lib/services/courses";
 import { AuthError } from "@/lib/auth";
 
 const statusStyle: Record<string, string> = {
-  pending: "bg-gray-100 text-foreground dark:bg-white/10",
-  "in-progress": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  completed: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  none: "bg-gray-100 text-foreground dark:bg-white/10",
+  submitted: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+  reviewed: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
 };
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   const { id } = await params;
+  const tenantId = new ObjectId(session!.tenantId!);
 
   let task;
   try {
-    task = await getTask(new ObjectId(session!.tenantId!), id);
+    task = await getTaskForInstitute(tenantId, id);
   } catch (error) {
     if (error instanceof AuthError && error.status === 404) notFound();
     throw error;
   }
-
-  const completedCount = task.roster.filter((m) => m.status === "completed").length;
+  const course = await getCourse(tenantId, task.courseId.toString());
+  const submittedCount = task.roster.filter((m) => m.submission).length;
+  const reviewedCount = task.roster.filter((m) => m.submission?.status === "reviewed").length;
 
   return (
     <div className="max-w-2xl">
@@ -36,11 +39,11 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           <div>
             <h1 className="text-lg font-semibold text-foreground">{task.title}</h1>
             <p className="text-xs text-muted-foreground">
-              {task.audienceType === "course" ? "Course" : "Department"}: {task.audienceValue}
+              Course: {course.name} ({course.code})
             </p>
           </div>
           <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-foreground dark:bg-white/10">
-            {completedCount}/{task.roster.length} completed
+            {submittedCount}/{task.roster.length} submitted · {reviewedCount} reviewed
           </span>
         </div>
 
@@ -59,26 +62,29 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">ID</th>
               <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Note</th>
+              <th className="px-4 py-2">Marks</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {task.roster.map((member) => (
-              <tr key={member.userId}>
-                <td className="px-4 py-2 text-foreground">{member.name}</td>
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{member.uniqueId ?? "—"}</td>
-                <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${statusStyle[member.status]}`}>
-                    {member.status}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-muted-foreground">{member.note ?? "—"}</td>
-              </tr>
-            ))}
+            {task.roster.map((member) => {
+              const status = member.submission?.status ?? "none";
+              return (
+                <tr key={member.studentId}>
+                  <td className="px-4 py-2 text-foreground">{member.name}</td>
+                  <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{member.uniqueId ?? "—"}</td>
+                  <td className="px-4 py-2">
+                    <span className={`rounded-full px-2 py-0.5 text-xs ${statusStyle[status]}`}>
+                      {status === "none" ? "Not submitted" : status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-muted-foreground">{member.submission?.marks ?? "—"}</td>
+                </tr>
+              );
+            })}
             {task.roster.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  No one in this {task.audienceType} yet.
+                  No students enrolled in this course yet.
                 </td>
               </tr>
             )}

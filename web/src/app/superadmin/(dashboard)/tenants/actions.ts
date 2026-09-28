@@ -3,15 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { setTenantStatus } from "@/lib/services/super-admin";
+import { resetTenantPassword, setTenantStatus, updateTenant } from "@/lib/services/super-admin";
 import { registerTenant } from "@/lib/services/auth";
 import { registerSchema } from "@/lib/validation/auth";
+import { resetTenantPasswordSchema, updateTenantSchema } from "@/lib/validation/super-admin";
 import { AuthError } from "@/lib/auth";
 
 async function requireSuperAdminSession() {
   const session = await getSession();
   if (!session || session.role !== "superadmin") {
-    redirect("/superadmin/login");
+    redirect("/login?role=superadmin");
   }
   return session;
 }
@@ -56,4 +57,73 @@ export async function createTenantAction(
 
   revalidatePath("/superadmin/tenants");
   redirect("/superadmin/tenants");
+}
+
+export interface UpdateTenantState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function updateTenantAction(
+  id: string,
+  _prevState: UpdateTenantState,
+  formData: FormData
+): Promise<UpdateTenantState> {
+  await requireSuperAdminSession();
+
+  const parsed = updateTenantSchema.safeParse({
+    instituteName: formData.get("instituteName"),
+    ownerName: formData.get("ownerName"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again." };
+  }
+
+  try {
+    await updateTenant(id, parsed.data);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { error: error.message };
+    }
+    console.error(error);
+    return { error: "Something went wrong. Please try again." };
+  }
+
+  revalidatePath(`/superadmin/tenants/${id}`);
+  revalidatePath("/superadmin/tenants");
+  return { success: true };
+}
+
+export interface ResetTenantPasswordState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function resetTenantPasswordAction(
+  id: string,
+  _prevState: ResetTenantPasswordState,
+  formData: FormData
+): Promise<ResetTenantPasswordState> {
+  await requireSuperAdminSession();
+
+  const parsed = resetTenantPasswordSchema.safeParse({ password: formData.get("password") });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Password must be at least 8 characters." };
+  }
+
+  try {
+    await resetTenantPassword(id, parsed.data.password);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { error: error.message };
+    }
+    console.error(error);
+    return { error: "Something went wrong. Please try again." };
+  }
+
+  return { success: true };
 }

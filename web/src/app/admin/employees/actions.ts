@@ -15,7 +15,7 @@ export interface CreateEmployeeState {
 async function requireAdminSession() {
   const session = await getSession();
   if (!session || session.role !== "admin" || !session.tenantId) {
-    redirect("/login");
+    redirect("/login?role=institute");
   }
   return session;
 }
@@ -32,7 +32,7 @@ export async function createEmployeeAction(
     dob: formData.get("dob"),
     department: formData.get("department"),
     designation: formData.get("designation"),
-    coursesTaught: formData.get("coursesTaught") || undefined,
+    courseIds: formData.getAll("courseIds"),
   });
 
   if (!parsed.success) {
@@ -56,4 +56,32 @@ export async function toggleEmployeeStatusAction(id: string, nextStatus: "active
   const session = await requireAdminSession();
   await updateEmployee(new ObjectId(session.tenantId!), id, { status: nextStatus }, new ObjectId(session.userId));
   revalidatePath("/admin/employees");
+}
+
+export interface UpdateEmployeeCoursesState {
+  error?: string;
+}
+
+export async function updateEmployeeCoursesAction(
+  id: string,
+  _prevState: UpdateEmployeeCoursesState,
+  formData: FormData
+): Promise<UpdateEmployeeCoursesState> {
+  const session = await requireAdminSession();
+
+  try {
+    await updateEmployee(
+      new ObjectId(session.tenantId!),
+      id,
+      { courseIds: formData.getAll("courseIds") as string[] },
+      new ObjectId(session.userId)
+    );
+  } catch (error) {
+    if (error instanceof AuthError) return { error: error.message };
+    console.error(error);
+    return { error: "Something went wrong. Please try again." };
+  }
+
+  revalidatePath(`/admin/employees/${id}`);
+  return {};
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantById } from "@/lib/services/super-admin";
 import { AuthError } from "@/lib/auth";
-import { TenantTabs } from "./tenant-tabs";
 
 export default async function TenantDetailLayout({
   children,
@@ -30,7 +29,6 @@ export default async function TenantDetailLayout({
         <h1 className="text-lg font-semibold text-foreground">{tenant.name}</h1>
         <span className="font-mono text-xs text-muted-foreground">{tenant.code}</span>
       </div>
-      <TenantTabs tenantId={id} />
       <div className="mt-4">{children}</div>
     </div>
   );

@@ -1,29 +1,45 @@
 import Link from "next/link";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
-import { listAttendance } from "@/lib/services/attendance";
+import { listEmployeeAttendanceForInstitute } from "@/lib/services/attendance";
+import { listEmployees } from "@/lib/services/employees";
 import { ModuleIcon } from "@/components/module-icon";
 import { IconAttendance } from "@/components/icons";
+import type { AttendanceStatus } from "@/types/models";
 
 export default async function AttendancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string; status?: string }>;
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string; status?: string; employeeId?: string }>;
 }) {
   const session = await getSession();
-  const { date, status } = await searchParams;
+  const { dateFrom, dateTo, status, employeeId } = await searchParams;
+  const tenantId = new ObjectId(session!.tenantId!);
 
-  const records = await listAttendance(new ObjectId(session!.tenantId!), {
-    date: date || undefined,
+  const filters: { dateFrom?: string; dateTo?: string; status?: AttendanceStatus; employeeId?: string } = {
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
     status: status === "present" || status === "late" || status === "absent" ? status : undefined,
-  });
+    employeeId: employeeId || undefined,
+  };
+
+  const [records, employees] = await Promise.all([
+    listEmployeeAttendanceForInstitute(tenantId, filters),
+    listEmployees(tenantId),
+  ]);
+
+  const exportParams = new URLSearchParams();
+  if (filters.dateFrom) exportParams.set("dateFrom", filters.dateFrom);
+  if (filters.dateTo) exportParams.set("dateTo", filters.dateTo);
+  if (filters.status) exportParams.set("status", filters.status);
+  if (filters.employeeId) exportParams.set("employeeId", filters.employeeId);
 
   return (
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <ModuleIcon mod="attendance" icon={IconAttendance} />
-          <h1 className="text-lg font-semibold text-foreground">All Attendance</h1>
+          <h1 className="text-lg font-semibold text-foreground">Employee Attendance</h1>
         </div>
         <Link
           href="/admin/attendance/display"
@@ -32,14 +48,41 @@ export default async function AttendancePage({
           Show Check-in QR
         </Link>
       </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Attendance report for employees. Student attendance is reported by their course instructors.
+      </p>
 
-      <form className="mt-4 flex gap-2" method="get">
-        <input
-          type="date"
-          name="date"
-          defaultValue={date}
+      <form className="mt-4 flex flex-wrap items-end gap-2" method="get">
+        <div>
+          <label className="block text-xs text-muted-foreground">From</label>
+          <input
+            type="date"
+            name="dateFrom"
+            defaultValue={dateFrom}
+            className="rounded-md border border-border px-3 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground">To</label>
+          <input
+            type="date"
+            name="dateTo"
+            defaultValue={dateTo}
+            className="rounded-md border border-border px-3 py-1.5 text-sm"
+          />
+        </div>
+        <select
+          name="employeeId"
+          defaultValue={employeeId ?? ""}
           className="rounded-md border border-border px-3 py-1.5 text-sm"
-        />
+        >
+          <option value="">All employees</option>
+          {employees.map((e) => (
+            <option key={e._id!.toString()} value={e._id!.toString()}>
+              {e.name}
+            </option>
+          ))}
+        </select>
         <select
           name="status"
           defaultValue={status ?? ""}
@@ -53,6 +96,12 @@ export default async function AttendancePage({
         <button type="submit" className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5">
           Filter
         </button>
+        <a
+          href={`/admin/attendance/export?${exportParams.toString()}`}
+          className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+        >
+          Export CSV
+        </a>
       </form>
 
       <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
@@ -62,7 +111,6 @@ export default async function AttendancePage({
               <th className="px-4 py-2">Photo</th>
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Role</th>
               <th className="px-4 py-2">Check-in</th>
               <th className="px-4 py-2">Status</th>
             </tr>
@@ -84,7 +132,6 @@ export default async function AttendancePage({
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">{record.date}</td>
                 <td className="px-4 py-2 text-foreground">{record.user.name}</td>
-                <td className="px-4 py-2 text-muted-foreground">{record.user.role}</td>
                 <td className="px-4 py-2 text-muted-foreground">
                   {record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString() : "—"}
                 </td>
@@ -105,7 +152,7 @@ export default async function AttendancePage({
             ))}
             {records.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                   No attendance records yet.
                 </td>
               </tr>

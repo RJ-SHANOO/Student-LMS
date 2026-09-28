@@ -29,7 +29,7 @@ export default async function SuperAdminTenantsPage() {
           <thead className="bg-background text-left text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-4 py-2">Institute</th>
-              <th className="px-4 py-2">Owner</th>
+              <th className="px-4 py-2">Contact</th>
               <th className="px-4 py-2">Users</th>
               <th className="px-4 py-2">Registered</th>
               <th className="px-4 py-2">Status</th>

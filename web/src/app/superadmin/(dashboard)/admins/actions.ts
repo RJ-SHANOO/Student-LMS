@@ -10,7 +10,7 @@ import { AuthError } from "@/lib/auth";
 async function requireSuperAdminSession() {
   const session = await getSession();
   if (!session || session.role !== "superadmin") {
-    redirect("/superadmin/login");
+    redirect("/login?role=superadmin");
   }
   return session;
 }

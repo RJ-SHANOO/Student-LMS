@@ -20,7 +20,7 @@ export async function markAttendanceAction(input: {
 }): Promise<MarkAttendanceResult> {
   const session = await getSession();
   if (!session || !["employee", "student"].includes(session.role) || !session.tenantId) {
-    redirect("/portal/login");
+    redirect("/login");
   }
 
   const parsed = markAttendanceSchema.safeParse(input);

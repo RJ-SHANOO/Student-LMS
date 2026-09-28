@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 import { listStudents } from "@/lib/services/students";
 import { listEmployees } from "@/lib/services/employees";
 import { listFees } from "@/lib/services/fees";
-import { listAttendance, todayDateString } from "@/lib/services/attendance";
+import { listEmployeeAttendanceForInstitute, todayDateString } from "@/lib/services/attendance";
 import { listActivityLog } from "@/lib/services/activity-log";
 import { IconActivity, IconAttendance, IconEmployees, IconFees, IconStudents } from "@/components/icons";
 
@@ -21,11 +21,12 @@ export default async function AdminDashboardPage() {
   const session = await getSession();
   const tenantId = new ObjectId(session!.tenantId!);
 
+  const today = todayDateString(new Date());
   const [students, employees, fees, todayAttendance, recentActivity] = await Promise.all([
     listStudents(tenantId, { status: "active" }),
     listEmployees(tenantId, { status: "active" }),
     listFees(tenantId),
-    listAttendance(tenantId, { date: todayDateString(new Date()) }),
+    listEmployeeAttendanceForInstitute(tenantId, { dateFrom: today, dateTo: today }),
     listActivityLog(tenantId, { limit: 6 }),
   ]);
 
@@ -49,7 +50,7 @@ export default async function AdminDashboardPage() {
       mod: "employees",
     },
     {
-      label: "Present Today",
+      label: "Employees Present Today",
       value: presentToday,
       href: "/admin/attendance",
       icon: IconAttendance,

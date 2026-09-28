@@ -3,6 +3,7 @@ import { usersCollection } from "@/lib/db/collections";
 import { AuthError } from "@/lib/auth";
 import { generateStudentId } from "@/lib/student-id";
 import { logActivity } from "@/lib/services/activity-log";
+import { getCourse } from "@/lib/services/courses";
 import type { Tenant, User } from "@/types/models";
 import type { createStudentSchema, updateStudentSchema } from "@/lib/validation/students";
 import type { z } from "zod";
@@ -18,11 +19,14 @@ export async function createStudent(tenant: Tenant, input: CreateStudentInput, a
     throw new AuthError("A person with this CNIC is already registered", 409);
   }
 
+  const courseId = new ObjectId(input.courseId);
+  const course = await getCourse(tenant._id!, input.courseId);
+
   const uniqueId = await generateStudentId({
     tenantId: tenant._id!,
     tenantCode: tenant.code,
     department: input.department,
-    course: input.course,
+    courseCode: course.code,
     batch: input.batch,
   });
 
@@ -34,7 +38,7 @@ export async function createStudent(tenant: Tenant, input: CreateStudentInput, a
     dob: input.dob,
     role: "student",
     department: input.department.toUpperCase(),
-    course: input.course.toUpperCase(),
+    courseId,
     batch: input.batch.toUpperCase(),
     status: "active",
     uniqueId,
@@ -72,12 +76,6 @@ export async function listStudents(
   return users.find(query).sort({ createdAt: -1 }).toArray();
 }
 
-export async function listDistinctCourses(tenantId: ObjectId) {
-  const users = await usersCollection();
-  const courses = await users.distinct("course", { tenantId, role: "student" });
-  return courses.filter((c): c is string => Boolean(c)).sort();
-}
-
 export async function getStudent(tenantId: ObjectId, id: string) {
   if (!ObjectId.isValid(id)) {
     throw new AuthError("Student not found", 404);
@@ -101,10 +99,14 @@ export async function updateStudent(
   }
   const users = await usersCollection();
 
-  const update: Partial<User> = { ...input };
+  const { courseId, ...rest } = input;
+  const update: Partial<User> = { ...rest };
   if (update.department) update.department = update.department.toUpperCase();
-  if (update.course) update.course = update.course.toUpperCase();
   if (update.batch) update.batch = update.batch.toUpperCase();
+  if (courseId) {
+    await getCourse(tenantId, courseId);
+    update.courseId = new ObjectId(courseId);
+  }
 
   const student = await users.findOneAndUpdate(
     { _id: new ObjectId(id), tenantId, role: "student" },

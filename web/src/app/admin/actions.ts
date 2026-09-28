@@ -5,5 +5,5 @@ import { destroySession } from "@/lib/session";
 
 export async function logoutAction() {
   await destroySession();
-  redirect("/login");
+  redirect("/login?role=institute");
 }

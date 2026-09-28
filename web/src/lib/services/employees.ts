@@ -2,6 +2,7 @@ import { ObjectId, type Filter } from "mongodb";
 import { usersCollection } from "@/lib/db/collections";
 import { AuthError } from "@/lib/auth";
 import { logActivity } from "@/lib/services/activity-log";
+import { assertCoursesBelongToTenant } from "@/lib/services/courses";
 import type { User } from "@/types/models";
 import type { createEmployeeSchema, updateEmployeeSchema } from "@/lib/validation/employees";
 import type { z } from "zod";
@@ -17,6 +18,9 @@ export async function createEmployee(tenantId: ObjectId, input: CreateEmployeeIn
     throw new AuthError("A person with this CNIC is already registered", 409);
   }
 
+  const courseIds = (input.courseIds ?? []).map((id) => new ObjectId(id));
+  await assertCoursesBelongToTenant(tenantId, courseIds);
+
   const result = await users.insertOne({
     tenantId,
     name: input.name,
@@ -25,7 +29,7 @@ export async function createEmployee(tenantId: ObjectId, input: CreateEmployeeIn
     role: "employee",
     department: input.department,
     designation: input.designation,
-    coursesTaught: input.coursesTaught,
+    courseIds,
     status: "active",
     createdAt: new Date(),
   });
@@ -90,9 +94,17 @@ export async function updateEmployee(
   }
   const users = await usersCollection();
 
+  const { courseIds, ...rest } = input;
+  const update: Partial<User> = { ...rest };
+  if (courseIds) {
+    const ids = courseIds.map((c) => new ObjectId(c));
+    await assertCoursesBelongToTenant(tenantId, ids);
+    update.courseIds = ids;
+  }
+
   const employee = await users.findOneAndUpdate(
     { _id: new ObjectId(id), tenantId, role: "employee" },
-    { $set: input },
+    { $set: update },
     { returnDocument: "after" }
   );
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { listStudents } from "@/lib/services/students";
+import { listCourses } from "@/lib/services/courses";
 import { ModuleIcon } from "@/components/module-icon";
 import { IconStudents } from "@/components/icons";
 import { toggleStudentStatusAction } from "./actions";
@@ -13,11 +14,16 @@ export default async function StudentsPage({
 }) {
   const session = await getSession();
   const { status, search } = await searchParams;
+  const tenantId = new ObjectId(session!.tenantId!);
 
-  const students = await listStudents(new ObjectId(session!.tenantId!), {
-    status: status === "active" || status === "inactive" ? status : undefined,
-    search: search || undefined,
-  });
+  const [students, courses] = await Promise.all([
+    listStudents(tenantId, {
+      status: status === "active" || status === "inactive" ? status : undefined,
+      search: search || undefined,
+    }),
+    listCourses(tenantId),
+  ]);
+  const courseCodeById = new Map(courses.map((c) => [c._id!.toString(), c.code]));
 
   return (
     <div>
@@ -78,7 +84,7 @@ export default async function StudentsPage({
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">
-                  {student.department} / {student.course}
+                  {student.department} / {student.courseId ? (courseCodeById.get(student.courseId.toString()) ?? "—") : "—"}
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">{student.batch}</td>
                 <td className="px-4 py-2">

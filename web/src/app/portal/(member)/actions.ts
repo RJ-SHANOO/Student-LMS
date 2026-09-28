@@ -5,5 +5,5 @@ import { destroySession } from "@/lib/session";
 
 export async function logoutAction() {
   await destroySession();
-  redirect("/portal/login");
+  redirect("/login");
 }

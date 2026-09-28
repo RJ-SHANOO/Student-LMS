@@ -3,20 +3,26 @@ import { notFound } from "next/navigation";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { getStudent } from "@/lib/services/students";
+import { listCourses } from "@/lib/services/courses";
 import { AuthError } from "@/lib/auth";
 import { toggleStudentStatusAction } from "../actions";
+import { EditCourseForm } from "./edit-course-form";
 
 export default async function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   const { id } = await params;
+  const tenantId = new ObjectId(session!.tenantId!);
 
   let student;
   try {
-    student = await getStudent(new ObjectId(session!.tenantId!), id);
+    student = await getStudent(tenantId, id);
   } catch (error) {
     if (error instanceof AuthError && error.status === 404) notFound();
     throw error;
   }
+
+  const courses = await listCourses(tenantId);
+  const currentCourse = courses.find((c) => c._id!.toString() === student.courseId?.toString());
 
   return (
     <div className="max-w-lg">
@@ -49,7 +55,9 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
           <dt className="text-muted-foreground">Department</dt>
           <dd className="text-foreground">{student.department}</dd>
           <dt className="text-muted-foreground">Course</dt>
-          <dd className="text-foreground">{student.course}</dd>
+          <dd className="text-foreground">
+            {currentCourse ? `${currentCourse.name} (${currentCourse.code})` : "—"}
+          </dd>
           <dt className="text-muted-foreground">Batch</dt>
           <dd className="text-foreground">{student.batch}</dd>
         </dl>
@@ -69,6 +77,15 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
             {student.status === "active" ? "Deactivate Student" : "Activate Student"}
           </button>
         </form>
+
+        <div className="mt-6 border-t border-border pt-4">
+          <p className="mb-2 text-sm font-medium text-foreground">Change Course</p>
+          <EditCourseForm
+            studentId={student._id!.toString()}
+            courses={courses.map((c) => ({ id: c._id!.toString(), name: c.name, code: c.code, status: c.status }))}
+            currentCourseId={student.courseId?.toString()}
+          />
+        </div>
       </div>
     </div>
   );

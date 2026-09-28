@@ -5,7 +5,7 @@ interface StudentIdInput {
   tenantId: ObjectId;
   tenantCode: string;
   department: string;
-  course: string;
+  courseCode: string;
   batch: string;
   year?: number;
 }
@@ -18,7 +18,7 @@ export async function generateStudentId({
   tenantId,
   tenantCode,
   department,
-  course,
+  courseCode,
   batch,
   year,
 }: StudentIdInput) {
@@ -36,7 +36,7 @@ export async function generateStudentId({
   const seqStr = seq.toString().padStart(3, "0");
 
   const dept = department.trim().toUpperCase();
-  const crs = course.trim().toUpperCase();
+  const crs = courseCode.trim().toUpperCase();
   const bat = batch.trim().toUpperCase();
 
   return `${tenantCode}-${dept}-${crs}-${bat}-${y}-${seqStr}`;

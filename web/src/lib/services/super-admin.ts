@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { superAdminsCollection, tenantsCollection, usersCollection } from "@/lib/db/collections";
 import { AuthError, hashPassword, signJwt, verifyPassword } from "@/lib/auth";
+import { logActivity } from "@/lib/services/activity-log";
 import type { TenantStatus, ThemePreference } from "@/types/models";
 
 export async function authenticateSuperAdmin(email: string, password: string) {
@@ -75,6 +76,80 @@ export async function setTenantStatus(id: string, status: TenantStatus) {
     throw new AuthError("Tenant not found", 404);
   }
   return updated;
+}
+
+// Edits the institute's profile and keeps its login account (a Users record
+// with role "admin") in sync, since that's what authenticateAdmin looks up by
+// email — Tenant.ownerEmail is a display copy, not the login credential itself.
+export async function updateTenant(
+  id: string,
+  input: { instituteName: string; ownerName: string; email: string; phone: string }
+) {
+  if (!ObjectId.isValid(id)) {
+    throw new AuthError("Tenant not found", 404);
+  }
+  const tenantId = new ObjectId(id);
+  const tenants = await tenantsCollection();
+  const users = await usersCollection();
+
+  const adminUser = await users.findOne({ tenantId, role: "admin" });
+  if (!adminUser) {
+    throw new AuthError("This institute has no login account to update", 404);
+  }
+
+  if (input.email !== adminUser.email) {
+    const emailTaken = await users.findOne({ email: input.email, role: "admin", _id: { $ne: adminUser._id } });
+    if (emailTaken) {
+      throw new AuthError("Another institute already uses this login email", 409);
+    }
+  }
+
+  const updated = await tenants.findOneAndUpdate(
+    { _id: tenantId },
+    { $set: { name: input.instituteName, ownerName: input.ownerName, ownerEmail: input.email, ownerPhone: input.phone } },
+    { returnDocument: "after" }
+  );
+  if (!updated) {
+    throw new AuthError("Tenant not found", 404);
+  }
+
+  await users.updateOne(
+    { _id: adminUser._id },
+    { $set: { name: input.ownerName, email: input.email, phone: input.phone } }
+  );
+
+  await logActivity({
+    tenantId,
+    userId: adminUser._id!,
+    action: "institute_updated",
+    description: `Institute profile updated by Super Admin`,
+  });
+
+  return updated;
+}
+
+// Super Admin-issued password reset for an institute's login account.
+export async function resetTenantPassword(id: string, newPassword: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new AuthError("Tenant not found", 404);
+  }
+  const tenantId = new ObjectId(id);
+  const users = await usersCollection();
+
+  const adminUser = await users.findOne({ tenantId, role: "admin" });
+  if (!adminUser) {
+    throw new AuthError("This institute has no login account to reset", 404);
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+  await users.updateOne({ _id: adminUser._id }, { $set: { passwordHash } });
+
+  await logActivity({
+    tenantId,
+    userId: adminUser._id!,
+    action: "institute_password_reset",
+    description: `Login password reset by Super Admin`,
+  });
 }
 
 export async function getSuperAdminById(id: string) {

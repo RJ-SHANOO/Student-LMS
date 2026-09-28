@@ -19,7 +19,7 @@ export interface RecordPaymentState {
 async function requireAdminSession() {
   const session = await getSession();
   if (!session || session.role !== "admin" || !session.tenantId) {
-    redirect("/login");
+    redirect("/login?role=institute");
   }
   return session;
 }

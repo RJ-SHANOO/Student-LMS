@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/mongodb";
-import type { ActivityLog, Attendance, Fee, Settings, SuperAdmin, Task, TaskCompletion, Tenant, User } from "@/types/models";
+import type { ActivityLog, Attendance, Course, Fee, Settings, SuperAdmin, Task, TaskSubmission, Tenant, User } from "@/types/models";
 
 export async function tenantsCollection() {
   const db = await getDb();
@@ -9,6 +9,11 @@ export async function tenantsCollection() {
 export async function usersCollection() {
   const db = await getDb();
   return db.collection<User>("users");
+}
+
+export async function coursesCollection() {
+  const db = await getDb();
+  return db.collection<Course>("courses");
 }
 
 export async function settingsCollection() {
@@ -31,9 +36,9 @@ export async function tasksCollection() {
   return db.collection<Task>("tasks");
 }
 
-export async function taskCompletionsCollection() {
+export async function taskSubmissionsCollection() {
   const db = await getDb();
-  return db.collection<TaskCompletion>("taskCompletions");
+  return db.collection<TaskSubmission>("taskSubmissions");
 }
 
 export async function activityLogCollection() {
@@ -62,15 +67,16 @@ let indexesEnsured = false;
 export async function ensureIndexes() {
   if (indexesEnsured) return;
 
-  const [tenants, users, settings, attendance, fees, tasks, taskCompletions, activityLog, superAdmins] =
+  const [tenants, users, courses, settings, attendance, fees, tasks, taskSubmissions, activityLog, superAdmins] =
     await Promise.all([
       tenantsCollection(),
       usersCollection(),
+      coursesCollection(),
       settingsCollection(),
       attendanceCollection(),
       feesCollection(),
       tasksCollection(),
-      taskCompletionsCollection(),
+      taskSubmissionsCollection(),
       activityLogCollection(),
       superAdminsCollection(),
     ]);
@@ -81,11 +87,12 @@ export async function ensureIndexes() {
     users.createIndex({ email: 1 }, { unique: true, sparse: true }),
     users.createIndex({ cnic: 1 }, { unique: true, sparse: true }),
     users.createIndex({ tenantId: 1 }),
+    courses.createIndex({ tenantId: 1, code: 1 }, { unique: true }),
     settings.createIndex({ tenantId: 1 }, { unique: true }),
     attendance.createIndex({ tenantId: 1, userId: 1, date: 1 }, { unique: true }),
     fees.createIndex({ tenantId: 1, studentId: 1 }),
-    tasks.createIndex({ tenantId: 1, audienceType: 1, audienceValue: 1 }),
-    taskCompletions.createIndex({ tenantId: 1, taskId: 1, userId: 1 }, { unique: true }),
+    tasks.createIndex({ tenantId: 1, courseId: 1 }),
+    taskSubmissions.createIndex({ tenantId: 1, taskId: 1, studentId: 1 }, { unique: true }),
     activityLog.createIndex({ tenantId: 1, timestamp: -1 }),
     superAdmins.createIndex({ email: 1 }, { unique: true }),
   ]);

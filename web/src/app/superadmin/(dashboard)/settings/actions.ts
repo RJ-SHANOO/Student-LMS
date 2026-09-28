@@ -17,7 +17,7 @@ export async function updateSuperAdminSettingsAction(
 ): Promise<SuperAdminSettingsState> {
   const session = await getSession();
   if (!session || session.role !== "superadmin") {
-    redirect("/superadmin/login");
+    redirect("/login?role=superadmin");
   }
 
   const parsed = updateSuperAdminSettingsSchema.safeParse({

@@ -4,8 +4,7 @@ export type UserRole = "superadmin" | "admin" | "employee" | "student";
 export type TenantStatus = "active" | "inactive";
 export type AttendanceStatus = "present" | "late" | "absent";
 export type FeeStatus = "paid" | "partial" | "unpaid";
-export type TaskStatus = "pending" | "in-progress" | "completed";
-export type TaskAudienceType = "course" | "department";
+export type TaskSubmissionStatus = "submitted" | "reviewed";
 export type ThemePreference = "light" | "dark" | "system";
 
 // SOIL's own team — platform-wide, not scoped to any tenant, kept in its own
@@ -41,19 +40,32 @@ export interface User {
   dob?: string;
   role: UserRole;
   department?: string;
-  course?: string;
   batch?: string;
+  // Students only — the single course they're enrolled in.
+  courseId?: ObjectId;
   // Employees only.
   designation?: string;
-  // Employees only — course codes (matches Student.course) this employee teaches.
-  // Drives which courses they're allowed to assign tasks to.
-  coursesTaught?: string[];
+  // Employees only — the course(s) this employee is assigned to. Drives which
+  // courses they're allowed to assign tasks to.
+  courseIds?: ObjectId[];
   status: "active" | "inactive";
   // Auto-generated for students as {tenantCode}-{department}-{course}-{batch}-{year}-{seq}.
   uniqueId?: string;
   passwordHash?: string;
   email?: string;
   phone?: string;
+  createdAt: Date;
+}
+
+export interface Course {
+  _id?: ObjectId;
+  tenantId: ObjectId;
+  name: string;
+  // Short unique-per-tenant uppercase code, e.g. "NAV" — also used as the
+  // course segment of a student's auto-generated unique ID.
+  code: string;
+  duration?: string;
+  status: "active" | "inactive";
   createdAt: Date;
 }
 
@@ -82,29 +94,36 @@ export interface Fee {
   dueDate: Date;
 }
 
-// A task now targets a whole course or department, not one person — every
-// student in that course (or employee in that department) sees it. Individual
-// progress lives separately in TaskCompletion, one per (task, user).
+// An Employee creates a task for one course they're assigned to — every
+// student enrolled in that course can see it and submit a file. Individual
+// submissions live separately in TaskSubmission, one per (task, student).
 export interface Task {
   _id?: ObjectId;
   tenantId: ObjectId;
-  audienceType: TaskAudienceType;
-  audienceValue: string;
+  courseId: ObjectId;
+  createdBy: ObjectId; // the employee who created/owns this task
   title: string;
   description?: string;
   dueDate?: Date;
-  createdBy: ObjectId;
+  // Optional reference material the employee attaches at creation (e.g. instructions).
+  attachmentUrl?: string;
+  attachmentName?: string;
   createdAt: Date;
 }
 
-export interface TaskCompletion {
+export interface TaskSubmission {
   _id?: ObjectId;
   tenantId: ObjectId;
   taskId: ObjectId;
-  userId: ObjectId;
-  status: TaskStatus;
-  note?: string;
-  updatedAt: Date;
+  studentId: ObjectId;
+  fileUrl: string;
+  fileName: string;
+  submittedAt: Date;
+  status: TaskSubmissionStatus;
+  remarks?: string;
+  marks?: number;
+  reviewedBy?: ObjectId;
+  reviewedAt?: Date;
 }
 
 export interface ActivityLog {

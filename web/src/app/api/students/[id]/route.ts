@@ -12,7 +12,7 @@ function serializeStudent(student: Awaited<ReturnType<typeof getStudent>>) {
     cnic: student.cnic,
     dob: student.dob,
     department: student.department,
-    course: student.course,
+    courseId: student.courseId?.toString(),
     batch: student.batch,
     status: student.status,
     uniqueId: student.uniqueId,

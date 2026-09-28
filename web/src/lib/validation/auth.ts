@@ -22,4 +22,7 @@ const cnicSchema = z
 export const loginMemberSchema = z.object({
   cnic: cnicSchema,
   dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "DOB must be in YYYY-MM-DD format"),
+  // Which login tab the form was submitted from — scopes the lookup so a
+  // student's CNIC+DOB can't authenticate through the Employee tab or vice versa.
+  role: z.enum(["employee", "student"]),
 });

@@ -6,24 +6,28 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Soft blue-tinted off-white — reads as a designed surface instead of flat
-     gray, and lets white cards (--color-surface) stand out above it. */
-  --color-background: #f3f6fb;
-  --color-surface: #ffffff;
-  --color-surface-hover: #eef3fa;
-  --color-foreground: #101828; /* near-black with a cool tint */
-  --color-muted-foreground: #64748b; /* slate-500 */
-  --color-border: #e2e8f0; /* slate-200 */
-  --color-primary: #2e5fa3; /* brand primary blue */
-  --color-primary-hover: #24487f;
-  --color-accent: #5ab3e0; /* brand accent sky blue */
-  --color-accent-soft: #eaf4fc;
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  /* Brand palette: Cyprus (deep green, primary) + Sand (warm off-white,
+     background). Sand as the main surface, Cyprus for buttons/active
+     nav/headings/links, cards a lighter tint of Sand, near-black-cyprus text. */
+  --color-background: #f0ede4; /* Sand */
+  --color-surface: #faf8f2; /* lighter tint of Sand, so cards lift off the page */
+  --color-surface-hover: #efe9da;
+  --color-foreground: #04140f; /* near-black, cyprus-tinted */
+  --color-muted-foreground: #5b6f6b;
+  --color-border: #ddd6c5;
+  --color-primary: #004741; /* Cyprus */
+  --color-primary-hover: #00332e;
+  --color-accent: #2e6f68; /* lighter tint of Cyprus */
+  --color-accent-soft: #e3ecea;
+  --shadow-card: 0 1px 2px rgba(4, 20, 15, 0.05), 0 1px 3px rgba(4, 20, 15, 0.08);
 
   /* Per-module accent colors — sidebar/dashboard/list-page icon badges each
-     get their own hue so the app doesn't read as one flat blue everywhere. */
-  --color-mod-students: #2e5fa3;
-  --color-mod-students-soft: #eaf4fc;
+     get their own hue so the app doesn't read as one flat color everywhere.
+     Students reuses the Cyprus brand primary as the flagship module. */
+  --color-mod-students: #004741;
+  --color-mod-students-soft: #e3ecea;
+  --color-mod-courses: #ea580c;
+  --color-mod-courses-soft: #ffedd5;
   --color-mod-employees: #7c3aed;
   --color-mod-employees-soft: #f3e8ff;
   --color-mod-attendance: #059669;
@@ -39,21 +43,25 @@
 }
 
 .dark {
-  --color-background: #121212;
-  --color-surface: #1e1e1e;
-  --color-surface-hover: #262626;
-  --color-foreground: #f5f5f5;
-  --color-muted-foreground: #9ca3af; /* gray-400 */
-  --color-border: #2c2c2c;
-  /* Sky blue reads better than the darker primary on near-black surfaces. */
-  --color-primary: #5ab3e0;
-  --color-primary-hover: #7cc4e8;
-  --color-accent: #5ab3e0;
-  --color-accent-soft: rgba(90, 179, 224, 0.15);
+  /* Very dark shades derived from Cyprus for background/surfaces, Sand for
+     text, a lighter Cyprus tint as the interactive accent. */
+  --color-background: #0b1f1d;
+  --color-surface: #12302d;
+  --color-surface-hover: #173a36;
+  --color-foreground: #f0ede4; /* Sand */
+  --color-muted-foreground: #b7c4c0;
+  --color-border: #1d3d39;
+  /* A lighter Cyprus tint reads better than the deep brand green on near-black surfaces. */
+  --color-primary: #3fa093;
+  --color-primary-hover: #5cb6aa;
+  --color-accent: #f0ede4; /* Sand, used as the secondary/highlight accent */
+  --color-accent-soft: rgba(240, 237, 228, 0.12);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
 
-  --color-mod-students: #7cb0e8;
-  --color-mod-students-soft: rgba(46, 95, 163, 0.25);
+  --color-mod-students: #3fa093;
+  --color-mod-students-soft: rgba(63, 160, 147, 0.22);
+  --color-mod-courses: #fb923c;
+  --color-mod-courses-soft: rgba(234, 88, 12, 0.22);
   --color-mod-employees: #c4b5fd;
   --color-mod-employees-soft: rgba(124, 58, 237, 0.22);
   --color-mod-attendance: #34d399;

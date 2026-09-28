@@ -14,10 +14,20 @@ export const markAttendanceSchema = z.object({
     .regex(/^data:image\/(jpeg|jpg|png);base64,/, "Photo must be a base64 image data URI"),
 });
 
-export const listAttendanceQuerySchema = z.object({
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-    .optional(),
+const dateField = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format");
+const objectIdField = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid id");
+
+// Institute's employee attendance report: date range + status + a specific employee.
+export const listEmployeeAttendanceQuerySchema = z.object({
+  dateFrom: dateField.optional(),
+  dateTo: dateField.optional(),
+  status: z.enum(["present", "late", "absent"]).optional(),
+  employeeId: objectIdField.optional(),
+});
+
+// An employee's own report: students in their course(s), date range + status.
+export const listCourseAttendanceQuerySchema = z.object({
+  dateFrom: dateField.optional(),
+  dateTo: dateField.optional(),
   status: z.enum(["present", "late", "absent"]).optional(),
 });

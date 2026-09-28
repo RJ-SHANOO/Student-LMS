@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { token, user } = await authenticateMember(parsed.data.cnic, parsed.data.dob);
+    const { token, user } = await authenticateMember(parsed.data.cnic, parsed.data.dob, parsed.data.role);
 
     return NextResponse.json({
       token,
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         role: user.role,
         uniqueId: user.uniqueId,
-        coursesTaught: user.coursesTaught,
+        courseIds: user.courseIds?.map((c) => c.toString()),
       },
     });
   } catch (error) {

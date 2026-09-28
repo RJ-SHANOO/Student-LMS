@@ -6,10 +6,15 @@ import { distanceMeters } from "@/lib/geo";
 import { getSettings } from "@/lib/services/settings";
 import { logActivity } from "@/lib/services/activity-log";
 import type { z } from "zod";
-import type { markAttendanceSchema, listAttendanceQuerySchema } from "@/lib/validation/attendance";
+import type {
+  markAttendanceSchema,
+  listEmployeeAttendanceQuerySchema,
+  listCourseAttendanceQuerySchema,
+} from "@/lib/validation/attendance";
 
 type MarkAttendanceInput = z.infer<typeof markAttendanceSchema>;
-type ListAttendanceQuery = z.infer<typeof listAttendanceQuerySchema>;
+type ListEmployeeAttendanceQuery = z.infer<typeof listEmployeeAttendanceQuerySchema>;
+type ListCourseAttendanceQuery = z.infer<typeof listCourseAttendanceQuerySchema>;
 
 // Server's local wall-clock date/time is used for "today" and the late-cutoff
 // comparison. This is fine as long as the server and the tenant's institute
@@ -104,14 +109,21 @@ export async function listMyAttendance(tenantId: ObjectId, userId: ObjectId) {
     .toArray();
 }
 
-export async function listAttendance(tenantId: ObjectId, filters: ListAttendanceQuery = {}) {
-  const attendance = await attendanceCollection();
-
+function dateRangeMatch(tenantId: ObjectId, filters: { dateFrom?: string; dateTo?: string; status?: string }) {
   const match: Record<string, unknown> = { tenantId };
-  if (filters.date) match.date = filters.date;
+  if (filters.dateFrom || filters.dateTo) {
+    const range: Record<string, string> = {};
+    if (filters.dateFrom) range.$gte = filters.dateFrom;
+    if (filters.dateTo) range.$lte = filters.dateTo;
+    match.date = range;
+  }
   if (filters.status) match.status = filters.status;
+  return match;
+}
 
-  const records = await attendance
+async function listAttendanceWithUser(match: Record<string, unknown>, userMatch: Record<string, unknown>) {
+  const attendance = await attendanceCollection();
+  return attendance
     .aggregate([
       { $match: match },
       { $sort: { date: -1, checkInTime: -1 } },
@@ -124,6 +136,7 @@ export async function listAttendance(tenantId: ObjectId, filters: ListAttendance
         },
       },
       { $unwind: "$user" },
+      { $match: userMatch },
       {
         $project: {
           date: 1,
@@ -140,6 +153,27 @@ export async function listAttendance(tenantId: ObjectId, filters: ListAttendance
       },
     ])
     .toArray();
+}
 
-  return records;
+// Institute's report: employees only (never students — see CLAUDE.md Section 6),
+// filterable by date range, status, and a specific employee.
+export async function listEmployeeAttendanceForInstitute(
+  tenantId: ObjectId,
+  filters: ListEmployeeAttendanceQuery = {}
+) {
+  const match = dateRangeMatch(tenantId, filters);
+  if (filters.employeeId) match.userId = new ObjectId(filters.employeeId);
+  return listAttendanceWithUser(match, { "user.role": "employee" });
+}
+
+// An employee's report: only students enrolled in the course(s) that employee
+// is assigned to — never any other course's students.
+export async function listStudentAttendanceForEmployee(
+  tenantId: ObjectId,
+  courseIds: ObjectId[],
+  filters: ListCourseAttendanceQuery = {}
+) {
+  if (courseIds.length === 0) return [];
+  const match = dateRangeMatch(tenantId, filters);
+  return listAttendanceWithUser(match, { "user.role": "student", "user.courseId": { $in: courseIds } });
 }

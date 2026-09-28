@@ -8,7 +8,7 @@ import { logoutSuperAdminAction } from "./actions";
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session || session.role !== "superadmin") {
-    redirect("/superadmin/login");
+    redirect("/login?role=superadmin");
   }
 
   const account = await getSuperAdminById(session.userId);

@@ -13,6 +13,7 @@ function serializeEmployee(employee: Awaited<ReturnType<typeof getEmployee>>) {
     dob: employee.dob,
     department: employee.department,
     designation: employee.designation,
+    courseIds: employee.courseIds?.map((c) => c.toString()),
     status: employee.status,
     createdAt: employee.createdAt,
   };

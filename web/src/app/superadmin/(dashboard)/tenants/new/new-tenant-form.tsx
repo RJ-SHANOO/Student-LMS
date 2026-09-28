@@ -29,7 +29,7 @@ export function NewTenantForm() {
 
       <div>
         <label htmlFor="ownerName" className="block text-sm font-medium text-foreground">
-          Owner Name
+          Institute Contact Name
         </label>
         <input
           id="ownerName"
@@ -43,7 +43,7 @@ export function NewTenantForm() {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-foreground">
-          Owner Email
+          Institute Login Email
         </label>
         <input
           id="email"
@@ -57,7 +57,7 @@ export function NewTenantForm() {
 
       <div>
         <label htmlFor="phone" className="block text-sm font-medium text-foreground">
-          Owner Phone
+          Contact Phone
         </label>
         <input
           id="phone"
@@ -82,7 +82,9 @@ export function NewTenantForm() {
           autoComplete="new-password"
           className="mt-1 block w-full rounded-md border border-border px-3 py-2 text-sm outline-none transition-shadow focus:border-primary focus:ring-2 focus:ring-accent/30"
         />
-        <p className="mt-1 text-xs text-muted-foreground">Share this with the institute owner so they can sign in at /login.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Share this with the institute so it can sign in at the Institute tab of /login.
+        </p>
       </div>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}

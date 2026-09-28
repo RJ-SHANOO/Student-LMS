@@ -107,9 +107,9 @@ export async function authenticateAdmin(email: string, password: string) {
   return { token, user, tenant };
 }
 
-export async function authenticateMember(cnic: string, dob: string) {
+export async function authenticateMember(cnic: string, dob: string, role: "employee" | "student") {
   const users = await usersCollection();
-  const user = await users.findOne({ cnic, dob, role: { $in: ["employee", "student"] } });
+  const user = await users.findOne({ cnic, dob, role });
 
   if (!user) {
     throw new AuthError("Invalid CNIC or date of birth", 401);

@@ -7,7 +7,7 @@ import { generateQrToken } from "@/lib/qr-token";
 export async function getQrTokenAction() {
   const session = await getSession();
   if (!session || session.role !== "admin" || !session.tenantId) {
-    redirect("/login");
+    redirect("/login?role=institute");
   }
   return generateQrToken(session.tenantId);
 }

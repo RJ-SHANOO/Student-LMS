@@ -6,12 +6,13 @@ import { getSettings } from "@/lib/services/settings";
 import { ThemeOverride } from "@/components/theme-script";
 import { Logo } from "@/components/logo";
 import { IconLogOut } from "@/components/icons";
+import { PortalNav } from "@/components/portal-nav";
 import { logoutAction } from "./actions";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session || !["employee", "student"].includes(session.role) || !session.tenantId) {
-    redirect("/portal/login");
+    redirect("/login");
   }
 
   const tenantId = new ObjectId(session.tenantId);
@@ -21,7 +22,7 @@ export default async function PortalLayout({ children }: { children: React.React
     getSettings(tenantId),
   ]);
   if (!user || user.status !== "active") {
-    redirect("/portal/login");
+    redirect("/login");
   }
 
   return (
@@ -46,6 +47,8 @@ export default async function PortalLayout({ children }: { children: React.React
           </button>
         </form>
       </header>
+
+      <PortalNav />
 
       <main className="flex-1 px-4 py-6">
         <div className="mx-auto w-full max-w-md">{children}</div>

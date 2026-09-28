@@ -10,14 +10,14 @@ import { logoutAction } from "./actions";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session || session.role !== "admin" || !session.tenantId) {
-    redirect("/login");
+    redirect("/login?role=institute");
   }
 
   const tenantId = new ObjectId(session.tenantId);
   const tenants = await tenantsCollection();
   const [tenant, settings] = await Promise.all([tenants.findOne({ _id: tenantId }), getSettings(tenantId)]);
   if (!tenant || tenant.status !== "active") {
-    redirect("/login");
+    redirect("/login?role=institute");
   }
 
   return (

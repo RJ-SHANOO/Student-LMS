@@ -197,7 +197,12 @@ export default function AttendanceCheckInPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-foreground">Check In</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold text-foreground">Check In</h1>
+        <Link href="/portal/attendance/report" className="text-sm text-primary hover:underline">
+          View Report
+        </Link>
+      </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[var(--shadow-card)]">
         {(step === "scan" || step === "selfie") && (

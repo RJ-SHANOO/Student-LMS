@@ -61,7 +61,12 @@ export default async function PortalHomePage() {
 
       {records.length > 0 && (
         <div className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
-          <p className="mb-3 text-sm font-medium text-foreground">Recent Attendance</p>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-medium text-foreground">Recent Attendance</p>
+            <Link href="/portal/attendance/report" className="text-xs text-primary hover:underline">
+              Full report
+            </Link>
+          </div>
           <ul className="space-y-2">
             {records.slice(0, 7).map((r) => (
               <li key={r.date} className="flex items-center justify-between text-sm">

@@ -6,6 +6,7 @@ import { Logo } from "./logo";
 import {
   IconActivity,
   IconAttendance,
+  IconCourses,
   IconDashboard,
   IconEmployees,
   IconFees,
@@ -17,6 +18,7 @@ import {
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: IconDashboard, exact: true, mod: null },
+  { href: "/admin/courses", label: "Courses", icon: IconCourses, exact: false, mod: "courses" },
   { href: "/admin/students", label: "Students", icon: IconStudents, exact: false, mod: "students" },
   { href: "/admin/employees", label: "Employees", icon: IconEmployees, exact: false, mod: "employees" },
   { href: "/admin/attendance", label: "Attendance", icon: IconAttendance, exact: false, mod: "attendance" },
@@ -41,7 +43,7 @@ export function AdminSidebar({
         <Logo size={32} />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-foreground">{tenantName}</p>
-          <p className="text-xs text-muted-foreground">Admin panel</p>
+          <p className="text-xs text-muted-foreground">Institute panel</p>
         </div>
       </div>
 

@@ -3,20 +3,25 @@ import { notFound } from "next/navigation";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/lib/session";
 import { getEmployee } from "@/lib/services/employees";
+import { listCourses } from "@/lib/services/courses";
 import { AuthError } from "@/lib/auth";
 import { toggleEmployeeStatusAction } from "../actions";
+import { EditCoursesForm } from "./edit-courses-form";
 
 export default async function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   const { id } = await params;
+  const tenantId = new ObjectId(session!.tenantId!);
 
   let employee;
   try {
-    employee = await getEmployee(new ObjectId(session!.tenantId!), id);
+    employee = await getEmployee(tenantId, id);
   } catch (error) {
     if (error instanceof AuthError && error.status === 404) notFound();
     throw error;
   }
+
+  const courses = await listCourses(tenantId);
 
   return (
     <div className="max-w-lg">
@@ -50,12 +55,6 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           <dd className="text-foreground">{employee.department}</dd>
           <dt className="text-muted-foreground">Designation</dt>
           <dd className="text-foreground">{employee.designation}</dd>
-          <dt className="text-muted-foreground">Courses Taught</dt>
-          <dd className="text-foreground">
-            {employee.coursesTaught && employee.coursesTaught.length > 0
-              ? employee.coursesTaught.join(", ")
-              : "—"}
-          </dd>
         </dl>
 
         <form
@@ -73,6 +72,20 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
             {employee.status === "active" ? "Deactivate Employee" : "Activate Employee"}
           </button>
         </form>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border bg-surface shadow-[var(--shadow-card)] p-6">
+        <h2 className="text-sm font-medium text-foreground">Assigned Courses</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Only instructors assigned to a course can create tasks for its students.
+        </p>
+        <div className="mt-4">
+          <EditCoursesForm
+            employeeId={employee._id!.toString()}
+            courses={courses.map((c) => ({ id: c._id!.toString(), name: c.name, code: c.code, status: c.status }))}
+            assignedCourseIds={(employee.courseIds ?? []).map((c) => c.toString())}
+          />
+        </div>
       </div>
     </div>
   );
