@@ -2,6 +2,7 @@ import { getTenantById } from "@/lib/services/super-admin";
 import { toggleTenantStatusAction } from "../actions";
 import { EditTenantForm } from "./edit-tenant-form";
 import { ResetPasswordForm } from "./reset-password-form";
+import { DeleteTenantForm } from "./delete-tenant-form";
 
 export default async function TenantOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -62,6 +63,17 @@ export default async function TenantOverviewPage({ params }: { params: Promise<{
         </p>
         <div className="mt-4">
           <ResetPasswordForm tenantId={tenant._id!.toString()} />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-red-600/40 bg-surface shadow-[var(--shadow-card)] p-6">
+        <h2 className="text-sm font-medium text-red-600">Danger Zone</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Permanently deletes this institute and all of its courses, employees, students, attendance, tasks, fees,
+          and activity log. This cannot be undone.
+        </p>
+        <div className="mt-4">
+          <DeleteTenantForm tenantId={tenant._id!.toString()} instituteName={tenant.name} />
         </div>
       </div>
     </div>

@@ -21,7 +21,10 @@ export function SplashScreen() {
     // from props/other state — the synchronous setState here is intentional.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(true);
-    const fadeTimer = setTimeout(() => setFadingOut(true), VISIBLE_MS - FADE_MS);
+    const fadeTimer = setTimeout(
+      () => setFadingOut(true),
+      VISIBLE_MS - FADE_MS,
+    );
     // Mark as shown only once the animation actually completes, not up front —
     // in dev, StrictMode runs this effect (and its cleanup) twice, and marking
     // the session up front would make the second run skip re-scheduling these

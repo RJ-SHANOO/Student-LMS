@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { resetTenantPassword, setTenantStatus, updateTenant } from "@/lib/services/super-admin";
+import { deleteTenant, getTenantById, resetTenantPassword, setTenantStatus, updateTenant } from "@/lib/services/super-admin";
 import { registerTenant } from "@/lib/services/auth";
 import { registerSchema } from "@/lib/validation/auth";
 import { resetTenantPasswordSchema, updateTenantSchema } from "@/lib/validation/super-admin";
@@ -126,4 +126,35 @@ export async function resetTenantPasswordAction(
   }
 
   return { success: true };
+}
+
+export interface DeleteTenantState {
+  error?: string;
+}
+
+export async function deleteTenantAction(
+  id: string,
+  _prevState: DeleteTenantState,
+  formData: FormData
+): Promise<DeleteTenantState> {
+  await requireSuperAdminSession();
+
+  const tenant = await getTenantById(id);
+  const confirmation = formData.get("confirmName");
+  if (confirmation !== tenant.name) {
+    return { error: "Institute name didn't match. Type it exactly to confirm deletion." };
+  }
+
+  try {
+    await deleteTenant(id);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { error: error.message };
+    }
+    console.error(error);
+    return { error: "Something went wrong. Please try again." };
+  }
+
+  revalidatePath("/superadmin/tenants");
+  redirect("/superadmin/tenants");
 }

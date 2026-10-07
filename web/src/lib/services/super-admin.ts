@@ -1,5 +1,16 @@
 import { ObjectId } from "mongodb";
-import { superAdminsCollection, tenantsCollection, usersCollection } from "@/lib/db/collections";
+import {
+  activityLogCollection,
+  attendanceCollection,
+  coursesCollection,
+  feesCollection,
+  settingsCollection,
+  superAdminsCollection,
+  taskSubmissionsCollection,
+  tasksCollection,
+  tenantsCollection,
+  usersCollection,
+} from "@/lib/db/collections";
 import { AuthError, hashPassword, signJwt, verifyPassword } from "@/lib/auth";
 import { logActivity } from "@/lib/services/activity-log";
 import type { TenantStatus, ThemePreference } from "@/types/models";
@@ -150,6 +161,46 @@ export async function resetTenantPassword(id: string, newPassword: string) {
     action: "institute_password_reset",
     description: `Login password reset by Super Admin`,
   });
+}
+
+// Permanently wipes the institute and every record scoped to it. There is no
+// undo — the Super Admin UI gates this behind typing the institute's name.
+export async function deleteTenant(id: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new AuthError("Tenant not found", 404);
+  }
+  const tenantId = new ObjectId(id);
+
+  const [tenants, users, courses, settings, attendance, fees, tasks, taskSubmissions, activityLog] =
+    await Promise.all([
+      tenantsCollection(),
+      usersCollection(),
+      coursesCollection(),
+      settingsCollection(),
+      attendanceCollection(),
+      feesCollection(),
+      tasksCollection(),
+      taskSubmissionsCollection(),
+      activityLogCollection(),
+    ]);
+
+  const tenant = await tenants.findOne({ _id: tenantId });
+  if (!tenant) {
+    throw new AuthError("Tenant not found", 404);
+  }
+
+  await Promise.all([
+    users.deleteMany({ tenantId }),
+    courses.deleteMany({ tenantId }),
+    settings.deleteMany({ tenantId }),
+    attendance.deleteMany({ tenantId }),
+    fees.deleteMany({ tenantId }),
+    tasks.deleteMany({ tenantId }),
+    taskSubmissions.deleteMany({ tenantId }),
+    activityLog.deleteMany({ tenantId }),
+  ]);
+
+  await tenants.deleteOne({ _id: tenantId });
 }
 
 export async function getSuperAdminById(id: string) {
