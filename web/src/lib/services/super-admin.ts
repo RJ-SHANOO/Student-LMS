@@ -3,6 +3,7 @@ import {
   activityLogCollection,
   attendanceCollection,
   coursesCollection,
+  countersCollection,
   feesCollection,
   settingsCollection,
   superAdminsCollection,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/db/collections";
 import { AuthError, hashPassword, signJwt, verifyPassword } from "@/lib/auth";
 import { logActivity } from "@/lib/services/activity-log";
+import { deleteTaskFile } from "@/lib/services/file-storage";
 import type { TenantStatus, ThemePreference } from "@/types/models";
 
 export async function authenticateSuperAdmin(email: string, password: string) {
@@ -171,7 +173,7 @@ export async function deleteTenant(id: string) {
   }
   const tenantId = new ObjectId(id);
 
-  const [tenants, users, courses, settings, attendance, fees, tasks, taskSubmissions, activityLog] =
+  const [tenants, users, courses, settings, attendance, fees, tasks, taskSubmissions, activityLog, counters] =
     await Promise.all([
       tenantsCollection(),
       usersCollection(),
@@ -182,12 +184,25 @@ export async function deleteTenant(id: string) {
       tasksCollection(),
       taskSubmissionsCollection(),
       activityLogCollection(),
+      countersCollection(),
     ]);
 
   const tenant = await tenants.findOne({ _id: tenantId });
   if (!tenant) {
     throw new AuthError("Tenant not found", 404);
   }
+
+  // Blob storage isn't part of Mongo's cascade — walk the file-bearing
+  // collections first and best-effort delete their blobs before the DB rows
+  // (and the URLs needed to find them) are gone for good.
+  const [tenantTasks, tenantSubmissions] = await Promise.all([
+    tasks.find({ tenantId }, { projection: { attachmentUrl: 1 } }).toArray(),
+    taskSubmissions.find({ tenantId }, { projection: { fileUrl: 1 } }).toArray(),
+  ]);
+  await Promise.all([
+    ...tenantTasks.filter((t) => t.attachmentUrl).map((t) => deleteTaskFile(t.attachmentUrl!)),
+    ...tenantSubmissions.map((s) => deleteTaskFile(s.fileUrl)),
+  ]);
 
   await Promise.all([
     users.deleteMany({ tenantId }),
@@ -198,6 +213,7 @@ export async function deleteTenant(id: string) {
     tasks.deleteMany({ tenantId }),
     taskSubmissions.deleteMany({ tenantId }),
     activityLog.deleteMany({ tenantId }),
+    counters.deleteMany({ _id: { $regex: `^student:${tenantId.toString()}:` } }),
   ]);
 
   await tenants.deleteOne({ _id: tenantId });

@@ -15,10 +15,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const tenantId = new ObjectId(session.tenantId);
   const tenants = await tenantsCollection();
-  const [tenant, settings] = await Promise.all([tenants.findOne({ _id: tenantId }), getSettings(tenantId)]);
+  const tenant = await tenants.findOne({ _id: tenantId });
   if (!tenant || tenant.status !== "active") {
     redirect("/login?role=institute");
   }
+
+  // Only looked up once the tenant is confirmed to exist — getSettings()
+  // auto-creates a Settings doc when one is missing, which must never happen
+  // for a tenantId that no longer exists (e.g. a stale session after delete).
+  const settings = await getSettings(tenantId);
 
   return (
     <div className="flex min-h-screen bg-background">

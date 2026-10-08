@@ -17,13 +17,15 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const tenantId = new ObjectId(session.tenantId);
   const users = await usersCollection();
-  const [user, settings] = await Promise.all([
-    users.findOne({ _id: new ObjectId(session.userId) }),
-    getSettings(tenantId),
-  ]);
+  const user = await users.findOne({ _id: new ObjectId(session.userId) });
   if (!user || user.status !== "active") {
     redirect("/login");
   }
+
+  // Only looked up once the user is confirmed to exist — getSettings()
+  // auto-creates a Settings doc when one is missing, which must never happen
+  // for a tenantId that no longer exists (e.g. a stale session after delete).
+  const settings = await getSettings(tenantId);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
