@@ -1,4 +1,12 @@
+import dns from "node:dns";
 import { MongoClient } from "mongodb";
+
+// Some local dev machines report a broken resolver (127.0.0.1 with nothing
+// listening), which breaks mongodb+srv:// DNS lookups even though the OS
+// resolver works fine. Fall back to a public resolver in that case.
+if (dns.getServers().every((server) => server === "127.0.0.1" || server === "::1")) {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+}
 
 const uri = process.env.MONGODB_URI;
 
